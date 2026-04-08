@@ -5,6 +5,7 @@ export interface City {
   distance?: number;
   trainTime?: string;
   driveTime?: string;
+  qweatherId?: string;
 }
 
 export type WeatherCondition = 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'overcast';
@@ -22,6 +23,15 @@ export interface WeatherData {
   score: number;
   weatherIcon?: string;
   weatherText?: string;
+  textNight?: string;
+  weatherNight?: WeatherCondition;
+  windDirDay?: string;
+  windScaleDay?: string;
+  vis?: number;
+  uvIndex?: number;
+  sunrise?: string;
+  sunset?: string;
+  pressure?: number;
 }
 
 export interface TransportInfo {
