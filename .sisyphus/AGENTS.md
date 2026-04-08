@@ -10,7 +10,7 @@
 
 - 天气API：和风天气（QWeather），key 在 .env.local 中
 - AI模型：智谱 GLM（通过 OpenAI 兼容接口），baseURL: https://open.bigmodel.cn/api/paas/v4/
-  - 默认模型：glm-4.7-flash
+  - 默认模型：glm-4-flash（glm-4 余额不足，glm-4.7-flash 不存在）
 - 所有 API Key 仅存在 .env.local（已加入 .gitignore，不提交到仓库）
 
 ## 技术栈

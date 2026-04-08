@@ -75,13 +75,13 @@ export async function fetchWeather(city: string, date: string): Promise<WeatherD
     `${GEO_API_BASE}/city/lookup?location=${encodeURIComponent(city)}&key=${apiKey}`
   );
 
-  if (!geoResponse.ok) {
-    throw new Error(`Failed to lookup city: ${geoResponse.statusText}`);
-  }
-
   const geoData = await geoResponse.json();
 
-  if (geoData.code !== '200' || !geoData.location || geoData.location.length === 0) {
+  if (geoData.error) {
+    throw new Error(`QWeather API error: ${geoData.error.title} - ${geoData.error.detail}`);
+  }
+
+  if (!geoData.location || geoData.location.length === 0) {
     throw new Error(`City not found: ${city}`);
   }
 
@@ -98,7 +98,11 @@ export async function fetchWeather(city: string, date: string): Promise<WeatherD
 
   const weatherData = await weatherResponse.json();
 
-  if (weatherData.code !== '200' || !weatherData.daily || weatherData.daily.length === 0) {
+  if (weatherData.error) {
+    throw new Error(`QWeather API error: ${weatherData.error.title} - ${weatherData.error.detail}`);
+  }
+
+  if (!weatherData.daily || weatherData.daily.length === 0) {
     throw new Error(`Weather data not available for city: ${city}`);
   }
 
