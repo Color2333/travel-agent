@@ -10,7 +10,7 @@
 
 - 天气API：和风天气（QWeather），key 在 .env.local 中
 - AI模型：智谱 GLM（通过 OpenAI 兼容接口），baseURL: https://open.bigmodel.cn/api/paas/v4/
-  - 默认模型：glm-4-flash
+  - 默认模型：glm-4.7-flash
 - 所有 API Key 仅存在 .env.local（已加入 .gitignore，不提交到仓库）
 
 ## 技术栈
@@ -23,5 +23,7 @@
 ## 已知注意事项
 
 - Leaflet 需要动态导入 (ssr: false)，MapInner 通过 dynamic import 包装
-- AI SDK v6 API 变更：tool() 用 inputSchema 而非 parameters，streamText 直接接受 messages
+- AI SDK v6 API 变更：tool() 用 inputSchema 而非 parameters
+- AI SDK v6 消息格式：useChat 发送 UIMessage[]（含 parts），route 中必须用 convertToModelMessages() 转为 ModelMessage[] 再传给 streamText
+- AI SDK v6 流式返回：route 中必须用 result.toUIMessageStreamResponse()（不是 toTextStreamResponse）
 - 城市数据库 key 使用中文名（如 '上海'），不是英文
