@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, UIMessage } from 'ai';
 import { Sparkles, MapPin, Umbrella, Sun } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
+import type { WeatherData } from '@/types';
 
 interface Config {
   provider: string;
@@ -22,11 +23,43 @@ const EXAMPLE_PROMPTS = [
   { icon: Sun, text: '下周日适合去哪玩' },
 ];
 
-export default function ChatContainer() {
+interface ChatContainerProps {
+  onWeatherUpdate?: (data: WeatherData[]) => void;
+}
+
+type PlanTripToolPart = {
+  type: 'tool-plan_trip';
+  toolCallId: string;
+  state: string;
+  input: Record<string, unknown>;
+  output?: Record<string, unknown>;
+};
+
+function extractWeatherData(messages: UIMessage[]): WeatherData[] | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role !== 'assistant') continue;
+    for (const part of msg.parts) {
+      if (part.type === 'tool-plan_trip') {
+        const toolPart = part as PlanTripToolPart;
+        if (toolPart.state === 'output-available' && toolPart.output) {
+          const cities = toolPart.output.cities;
+          if (Array.isArray(cities) && cities.length > 0) {
+            return cities as WeatherData[];
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export default function ChatContainer({ onWeatherUpdate }: ChatContainerProps) {
   const [config, setConfig] = React.useState<Config | null>(null);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
+  const lastWeatherUpdateRef = useRef<string>('');
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -34,6 +67,23 @@ export default function ChatContainer() {
       body: config || undefined,
     }),
   });
+
+  const isLoading = status === 'submitted' || status === 'streaming';
+
+  const handleWeatherExtract = useCallback((msgs: UIMessage[]) => {
+    const data = extractWeatherData(msgs);
+    if (data) {
+      const key = data.map(d => `${d.city}-${d.score}`).join('|');
+      if (key !== lastWeatherUpdateRef.current) {
+        lastWeatherUpdateRef.current = key;
+        onWeatherUpdate?.(data);
+      }
+    }
+  }, [onWeatherUpdate]);
+
+  useEffect(() => {
+    handleWeatherExtract(messages);
+  }, [messages, handleWeatherExtract]);
 
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -51,7 +101,7 @@ export default function ChatContainer() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  }, [messages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +118,6 @@ export default function ChatContainer() {
   const handlePromptClick = (text: string) => {
     sendMessage({ text });
   };
-
-  const isLoading = status === 'submitted' || status === 'streaming';
 
   return (
     <div className="glass flex flex-col h-full overflow-hidden rounded-2xl border border-white/40 shadow-xl backdrop-blur-xl bg-white/70">

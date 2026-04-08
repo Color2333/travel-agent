@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TravelAgent - 智能出行天气决策助手
 
-## Getting Started
+基于 AI Agent 的出行决策工具。输入出发地和日期，自动查询周边城市天气，推荐最佳目的地。
 
-First, run the development server:
+## 功能
+
+- **AI 对话** — 自然语言交互，理解"这周六"、"明天"等中文日期
+- **天气查询** — 和风天气 API，自动批量查询周边城市天气
+- **智能评分** — 综合昼夜天气、降水概率、能见度、温差等多维度打分
+- **地图可视化** — Leaflet 地图标记各城市天气状况
+- **城市卡片** — 按评分排序，展示天气、温度、降雨概率、交通时间
+
+## 技术栈
+
+| 层 | 技术 |
+|----|------|
+| 框架 | Next.js 14 (App Router) |
+| AI | Vercel AI SDK v6 + 智谱 GLM-4.7 |
+| 天气 | 和风天气 API |
+| 地图 | React-Leaflet + OpenStreetMap |
+| UI | Tailwind CSS + Lucide Icons |
+
+## 快速开始
 
 ```bash
+# 安装依赖
+npm install
+
+# 配置环境变量
+cp .env.example .env.local
+# 填入你的 API Key
+
+# 启动开发服务器
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 环境变量
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+在 `.env.local` 中配置：
 
-## Learn More
+```
+# 智谱 AI（必需）
+OPENAI_API_KEY=your_zhipu_api_key
 
-To learn more about Next.js, take a look at the following resources:
+# 和风天气（必需）
+QWEATHER_API_KEY=your_qweather_key
+QWEATHER_API_HOST=your_api_host
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 项目结构
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  page.tsx                    # 主页面（聊天 + 地图 + 卡片布局）
+  api/
+    agent/route.ts            # AI Agent 流式接口
+    cities/route.ts           # 周边城市查询
+    weather/route.ts          # 天气查询
+  components/
+    chat/                     # 聊天组件
+    map/                      # 地图组件
+    cards/                    # 城市卡片组件
+    layout/                   # Header、SettingsModal
+lib/
+  ai/tools.ts                # AI 工具定义（get_location, parse_date, plan_trip）
+  cities/
+    data.ts                   # 城市数据库（坐标、距离、交通时间）
+    utils.ts                  # 周边城市筛选
+  weather/
+    api.ts                    # 和风天气 API 封装
+    cache.ts                  # 天气缓存
+types/index.ts               # TypeScript 类型定义
+```
 
-## Deploy on Vercel
+## AI 工具
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Agent 内置三个工具：
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `get_location` — 获取用户出发城市
+- `parse_date` — 解析"这周六"、"明天"、"2026-04-12"等自然语言日期
+- `plan_trip` — 一站式出行规划：查找周边城市 → 批量查询天气 → 评分排序 → 返回推荐结果
+
+## License
+
+MIT

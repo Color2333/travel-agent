@@ -11,7 +11,7 @@ import type { WeatherData } from '@/types';
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [weatherData] = useState<WeatherData[]>([]);
+  const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 relative overflow-hidden">
@@ -33,7 +33,7 @@ export default function Home() {
       <main className="relative z-10 mx-auto max-w-[1600px] px-3 sm:px-4 lg:px-6 xl:px-8 h-[calc(100vh-4rem)]">
         <div className="grid h-full gap-4 lg:gap-6 lg:grid-cols-[420px_1fr] py-4">
           <div className="h-full min-h-0">
-            <ChatContainer />
+            <ChatContainer onWeatherUpdate={setWeatherData} />
           </div>
 
           <div className="hidden lg:flex flex-col gap-4 h-full min-h-0 overflow-hidden">
