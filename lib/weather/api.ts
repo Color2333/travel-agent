@@ -1,11 +1,11 @@
 import type { WeatherData, WeatherCondition } from '@/types';
 
-const GEO_API_BASE = 'https://geoapi.qweather.com/v2';
-const WEATHER_API_BASE = 'https://devapi.qweather.com/v7';
-const PRODUCTION_WEATHER_API_BASE = 'https://api.qweather.com/v7';
+const API_HOST = process.env.WEATHER_API_HOST || 'ma5pwe7m85.re.qweatherapi.com';
+const GEO_API_BASE = `https://${API_HOST}/geo/v2`;
+const WEATHER_API_BASE = `https://${API_HOST}/v7`;
 
 function getWeatherApiBase(): string {
-  return process.env.NODE_ENV === 'production' ? PRODUCTION_WEATHER_API_BASE : WEATHER_API_BASE;
+  return WEATHER_API_BASE;
 }
 
 function getApiKey(): string {
