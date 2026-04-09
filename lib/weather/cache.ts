@@ -14,12 +14,12 @@ export class WeatherCache {
     this.cache = new Map();
   }
 
-  private makeKey(city: string, date: string): string {
-    return `${city}_${date}`;
+  private makeKey(city: string, date: string, cacheKey?: string): string {
+    return `${cacheKey ?? city}_${date}`;
   }
 
-  get(city: string, date: string): WeatherData | null {
-    const key = this.makeKey(city, date);
+  get(city: string, date: string, cacheKey?: string): WeatherData | null {
+    const key = this.makeKey(city, date, cacheKey);
     const entry = this.cache.get(key);
 
     if (!entry) {
@@ -36,8 +36,8 @@ export class WeatherCache {
     return entry.data;
   }
 
-  set(city: string, date: string, data: WeatherData): void {
-    const key = this.makeKey(city, date);
+  set(city: string, date: string, data: WeatherData, cacheKey?: string): void {
+    const key = this.makeKey(city, date, cacheKey);
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

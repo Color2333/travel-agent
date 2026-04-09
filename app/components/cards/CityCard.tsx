@@ -7,6 +7,7 @@ interface CityCardProps {
   city: City;
   weather?: WeatherData;
   onClick?: () => void;
+  isActive?: boolean;
   isHighlighted?: boolean;
   rank?: number;
 }
@@ -70,7 +71,7 @@ function TransportRow({
   );
 }
 
-export default function CityCard({ city, weather, onClick, isHighlighted, rank }: CityCardProps) {
+export default function CityCard({ city, weather, onClick, isActive, isHighlighted, rank }: CityCardProps) {
   const conditionInfo = weather ? WEATHER_CONDITION_MAP[weather.weather] : null;
   const weatherIcon = conditionInfo?.icon ?? '🌡️';
   const weatherLabel = weather?.weatherText || conditionInfo?.label || '';
@@ -85,15 +86,21 @@ export default function CityCard({ city, weather, onClick, isHighlighted, rank }
       className={`
         group relative w-full overflow-hidden rounded-2xl border bg-white text-left
         transition-all duration-300 ease-out
-        ${isHighlighted
-          ? 'border-primary-200 ring-2 ring-primary-400 ring-offset-2 ring-offset-blue-50/50 shadow-md shadow-primary-100'
-          : 'border-gray-200/80 hover:border-gray-300'
+        ${isActive
+          ? 'border-sky-300 ring-2 ring-sky-400 ring-offset-2 ring-offset-sky-50/80 shadow-[0_18px_40px_rgba(14,165,233,0.22)]'
+          : isHighlighted
+            ? 'border-primary-200 ring-2 ring-primary-400 ring-offset-2 ring-offset-blue-50/50 shadow-md shadow-primary-100'
+            : 'border-gray-200/80 hover:border-gray-300'
         }
         ${onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/60' : ''}
       `}
     >
+      {isActive && (
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500" />
+      )}
+
       {/* Top gradient accent for highlighted cards */}
-      {isHighlighted && (
+      {isHighlighted && !isActive && (
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary-400 to-primary-500" />
       )}
 

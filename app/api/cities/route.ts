@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { resolveNearbyCities } from '@/lib/cities/nearby';
 import { resolveOriginCity } from '@/lib/cities/lookup';
-import { findNearbyFromCoords } from '@/lib/cities/utils';
 import type { City } from '@/types';
 import { getErrorStatus } from '@/lib/errors';
 import { citiesQuerySchema } from '@/lib/validation';
@@ -35,7 +35,7 @@ export async function GET(request: Request): Promise<NextResponse<CitiesResponse
       return NextResponse.json({ error: `无法识别城市"${city}"` }, { status: 404 });
     }
 
-    const cities = findNearbyFromCoords(origin.lat, origin.lng, maxDistance, origin.name);
+    const cities = await resolveNearbyCities(origin.lat, origin.lng, maxDistance, origin.name);
     if (cities.length === 0) {
       return NextResponse.json(
         { error: `${city} 周边 ${maxDistance}km 内暂无数据` },

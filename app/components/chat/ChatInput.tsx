@@ -20,7 +20,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
       const newHeight = Math.min(textarea.scrollHeight, 120);
       textarea.style.height = `${newHeight}px`;
     }
-  }, []);
+  }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -56,6 +56,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
 
         <button
           type="submit"
+          aria-label="发送消息"
           disabled={isDisabled}
           className={`flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
             isDisabled

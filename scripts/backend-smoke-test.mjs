@@ -11,8 +11,13 @@ const checks = [
     expectedStatus: 400,
   },
   {
-    name: 'cities unknown origin returns 404',
+    name: 'cities supported origin returns 200',
     path: '/api/cities?city=%E5%8C%97%E4%BA%AC',
+    expectedStatus: 200,
+  },
+  {
+    name: 'cities truly unknown origin returns 404',
+    path: '/api/cities?city=%E7%81%AB%E6%98%9F',
     expectedStatus: 404,
   },
   {

@@ -46,6 +46,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleSave = () => {
     localStorage.setItem('ai_config', JSON.stringify(config));
+    window.dispatchEvent(new CustomEvent('ai-config-updated'));
     onClose();
   };
 

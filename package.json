@@ -11,7 +11,8 @@
     "test:unit": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/*.test.ts",
     "test:backend": "node scripts/backend-smoke-test.mjs",
     "test:backend-success": "node scripts/backend-success-test.mjs",
-    "test:agent-provider": "node scripts/agent-provider-test.mjs"
+    "test:agent-provider": "node scripts/agent-provider-test.mjs",
+    "test:e2e-chat": "node scripts/e2e-chat-ux.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.52",
@@ -28,6 +29,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^18",

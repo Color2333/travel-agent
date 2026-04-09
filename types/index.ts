@@ -16,6 +16,10 @@ export type WeatherCondition = 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'overcas
 export interface WeatherData {
   city: string;
   date: string;
+  lat?: number;
+  lng?: number;
+  qweatherId?: string;
+  province?: string;
   weather: WeatherCondition;
   tempHigh: number;
   tempLow: number;
@@ -91,6 +95,35 @@ export interface WeatherAPIResponse {
   weather?: WeatherData;
   error?: string;
   cached?: boolean;
+}
+
+export interface TripRecommendation {
+  city: string;
+  score: number;
+  weather?: string;
+  tempHigh?: number;
+  tempLow?: number;
+  rainProbability?: number;
+  trainTime?: string;
+  trainPrice?: string;
+  reason: string;
+}
+
+export interface TripPlanResult {
+  origin: string;
+  date: string;
+  cities: WeatherData[];
+  summary?: string;
+  error?: string;
+  failedCities?: Array<{ city: string; error: string }>;
+  topRecommendation?: TripRecommendation;
+  goodOptions?: TripRecommendation[];
+  avoidCities?: Array<{
+    city: string;
+    score: number;
+    weather?: string;
+    reason: string;
+  }>;
 }
 
 export const WEATHER_CONDITION_MAP: Record<WeatherCondition, { label: string; icon: string; color: string }> = {

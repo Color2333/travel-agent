@@ -1,50 +1,25 @@
-import type { City, WeatherData } from '../../types/index.ts';
-import { resolveOriginCity, searchQWeatherNearbyCities } from '../cities/lookup.ts';
-import { findNearbyFromCoords } from '../cities/utils.ts';
+import type { WeatherData } from '../../types/index.ts';
+import { resolveNearbyCities } from '../cities/nearby.ts';
+import { resolveOriginCity } from '../cities/lookup.ts';
 import { fetchWeather, fetchWeatherById } from '../weather/api.ts';
 import { weatherCache } from '../weather/cache.ts';
 
 export type TripWeatherResult = WeatherData & {
+  lat: number;
+  lng: number;
+  qweatherId: string | undefined;
+  province: string | undefined;
   distance: number | undefined;
   trainTime: string | undefined;
   driveTime: string | undefined;
   trainPrice: string | undefined;
   drivePrice: string | undefined;
-  province: string | undefined;
 };
 
 export type TripCityFailure = {
   city: string;
   error: string;
 };
-
-/**
- * Finds nearby cities using QWeather's full city database (coordinate-based search).
- * Falls back to our static 65-city DB if QWeather returns too few results.
- */
-async function resolveNearbyCities(
-  originLat: number,
-  originLng: number,
-  maxDistance: number,
-  excludeName: string,
-): Promise<City[]> {
-  try {
-    const qwCities = await searchQWeatherNearbyCities(originLat, originLng, maxDistance, excludeName);
-    if (qwCities.length >= 3) return qwCities;
-
-    // QWeather returned too few (e.g., sparse region) — supplement with static DB
-    const staticCities = findNearbyFromCoords(originLat, originLng, maxDistance, excludeName);
-    if (qwCities.length === 0) return staticCities;
-
-    // Merge: QWeather results take priority (have real IDs), static fills gaps
-    const qwNames = new Set(qwCities.map((c) => c.name));
-    const supplement = staticCities.filter((c) => !qwNames.has(c.name));
-    return [...qwCities, ...supplement].sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
-  } catch {
-    // QWeather unavailable — use static DB
-    return findNearbyFromCoords(originLat, originLng, maxDistance, excludeName);
-  }
-}
 
 export async function planTrip(city: string, date: string, maxDistance: number = 300) {
   try {
@@ -74,16 +49,20 @@ export async function planTrip(city: string, date: string, maxDistance: number =
     const results = await Promise.all(
       nearbyCities.map(async (c) => {
         try {
-          const cached = weatherCache.get(c.name, date);
+          const cacheKey = c.qweatherId ?? `${c.name}_${c.province ?? ''}`;
+          const cached = weatherCache.get(c.name, date, cacheKey);
           if (cached) {
             return {
               ...cached,
+              lat: c.lat,
+              lng: c.lng,
+              qweatherId: c.qweatherId,
+              province: c.province,
               distance: c.distance,
               trainTime: c.trainTime,
               driveTime: c.driveTime,
               trainPrice: c.trainPrice,
               drivePrice: c.drivePrice,
-              province: c.province,
             };
           }
 
@@ -94,15 +73,18 @@ export async function planTrip(city: string, date: string, maxDistance: number =
             weather = await fetchWeather(c.name, date);
           }
 
-          weatherCache.set(c.name, date, weather);
+          weatherCache.set(c.name, date, weather, cacheKey);
           return {
             ...weather,
+            lat: c.lat,
+            lng: c.lng,
+            qweatherId: c.qweatherId,
+            province: c.province,
             distance: c.distance,
             trainTime: c.trainTime,
             driveTime: c.driveTime,
             trainPrice: c.trainPrice,
             drivePrice: c.drivePrice,
-            province: c.province,
           };
         } catch (error) {
           return {

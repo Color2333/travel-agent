@@ -1,17 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Cloud, Sun } from 'lucide-react';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/layout/SettingsModal';
 import ChatContainer from './components/chat/ChatContainer';
 import WeatherMap from './components/map/WeatherMap';
 import CityCardGrid from './components/cards/CityCardGrid';
-import type { WeatherData } from '@/types';
+import DecisionPanel from './components/decision/DecisionPanel';
+import type { TripPlanResult, WeatherData } from '@/types';
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
+  const [tripPlan, setTripPlan] = useState<TripPlanResult | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [queuedPrompt, setQueuedPrompt] = useState<{ id: number; text: string } | null>(null);
+
+  useEffect(() => {
+    if (weatherData.length === 0) {
+      setSelectedCity(null);
+      return;
+    }
+
+    setSelectedCity((current) => {
+      if (current && weatherData.some((item) => item.city === current)) {
+        return current;
+      }
+
+      return [...weatherData].sort((a, b) => b.score - a.score)[0]?.city ?? null;
+    });
+  }, [weatherData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 relative overflow-hidden">
@@ -30,21 +49,41 @@ export default function Home() {
 
       <Header onSettingsClick={() => setIsSettingsOpen(true)} />
 
-      <main className="relative z-10 mx-auto max-w-[1600px] px-3 sm:px-4 lg:px-6 xl:px-8 h-[calc(100vh-4rem)]">
-        <div className="grid h-full gap-4 lg:gap-6 lg:grid-cols-[420px_1fr] py-4">
-          <div className="h-full min-h-0">
-            <ChatContainer onWeatherUpdate={setWeatherData} />
+      <main className="relative z-10 mx-auto max-w-[1600px] px-3 sm:px-4 lg:px-6 xl:px-8 pb-6">
+        <div className="grid gap-4 py-4 lg:min-h-[calc(100vh-4rem)] lg:grid-cols-[minmax(360px,420px)_1fr] lg:gap-6">
+          <div className="min-h-[52vh] lg:h-[calc(100vh-6rem)] lg:min-h-0">
+            <ChatContainer
+              onWeatherUpdate={setWeatherData}
+              onPlanUpdate={setTripPlan}
+              queuedPrompt={queuedPrompt}
+              onQueuedPromptHandled={() => setQueuedPrompt(null)}
+            />
           </div>
 
-          <div className="hidden lg:flex flex-col gap-4 h-full min-h-0 overflow-hidden">
-            <div className="flex-shrink-0 h-[45%] min-h-[280px]">
+          <div className="flex flex-col gap-4 min-h-0">
+            <div className="flex-shrink-0 h-[380px] sm:h-[440px] lg:h-[44vh] lg:min-h-[340px]">
               <WeatherMap
                 weatherData={weatherData}
+                originCity={tripPlan?.origin}
+                selectedCity={selectedCity}
+                onSelectCity={setSelectedCity}
                 className="h-full w-full rounded-2xl shadow-lg"
               />
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-              <CityCardGrid weatherData={weatherData} />
+            <div className="flex-shrink-0">
+              <DecisionPanel
+                tripPlan={tripPlan}
+                selectedCity={selectedCity}
+                weatherData={weatherData}
+                onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
+              />
+            </div>
+            <div className="min-h-0 lg:flex-1 lg:overflow-y-auto custom-scrollbar">
+              <CityCardGrid
+                weatherData={weatherData}
+                selectedCity={selectedCity}
+                onCityClick={setSelectedCity}
+              />
             </div>
           </div>
         </div>

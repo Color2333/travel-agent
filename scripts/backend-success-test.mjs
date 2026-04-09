@@ -41,12 +41,29 @@ function createWeatherServer() {
     }
 
     if (req.url.startsWith('/geo/v2/city/lookup')) {
+      const url = new URL(req.url, `http://127.0.0.1:${weatherPort}`);
+      const location = url.searchParams.get('location');
       res.setHeader('Content-Type', 'application/json');
+      if (location === '121.5440,29.8683') {
+        res.end(JSON.stringify({
+          code: '200',
+          location: [
+            { id: '101210507', name: '绍兴', lat: '30.0003', lon: '120.5820', adm1: '浙江', adm2: '绍兴', type: 'city' },
+            { id: '101211101', name: '舟山', lat: '29.9852', lon: '122.2074', adm1: '浙江', adm2: '舟山', type: 'city' },
+            { id: '101210301', name: '嘉兴', lat: '30.7467', lon: '120.7508', adm1: '浙江', adm2: '嘉兴', type: 'city' },
+          ],
+        }));
+        return;
+      }
+
       res.end(JSON.stringify({
+        code: '200',
         location: [
           {
-            id: '101020100',
-            name: '上海',
+            id: location === '宁波' ? '101210401' : '101020100',
+            name: location === '宁波' ? '宁波' : '上海',
+            lat: location === '宁波' ? '29.8683' : '31.2304',
+            lon: location === '宁波' ? '121.5440' : '121.4737',
           },
         ],
       }));
@@ -84,6 +101,23 @@ async function assertJson(path, expectedStatus, assertBody) {
   assertBody(body);
 }
 
+async function assertCitiesUsesDynamicSearch() {
+  const response = await fetch(`${appBaseUrl}/api/cities?city=%E5%AE%81%E6%B3%A2&maxDistance=200`);
+  const body = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(`/api/cities dynamic search expected 200, got ${response.status}, body=${JSON.stringify(body)}`);
+  }
+
+  if (!Array.isArray(body.cities) || body.cities.length === 0) {
+    throw new Error(`expected dynamic nearby cities, got ${JSON.stringify(body)}`);
+  }
+
+  if (!body.cities.some((city) => city.province === '浙江')) {
+    throw new Error(`expected dynamic city data with province metadata, got ${JSON.stringify(body)}`);
+  }
+}
+
 const weatherServer = createWeatherServer();
 await new Promise((resolve) => weatherServer.listen(weatherPort, '127.0.0.1', resolve));
 
@@ -108,11 +142,14 @@ try {
   await waitForServer(`${appBaseUrl}/api/cities`);
 
   await assertJson('/api/cities?city=%E4%B8%8A%E6%B5%B7&maxDistance=200', 200, (body) => {
-    if (body.count !== 5) {
-      throw new Error(`expected 5 nearby cities, got ${body.count}`);
+    if (body.count !== 9) {
+      throw new Error(`expected 9 nearby cities, got ${body.count}`);
     }
   });
   console.log('PASS cities success path');
+
+  await assertCitiesUsesDynamicSearch();
+  console.log('PASS cities dynamic nearby search');
 
   await assertJson('/api/weather?city=%E4%B8%8A%E6%B5%B7&date=2026-04-10', 200, (body) => {
     if (body.city !== '上海' || body.score !== 90 || body.weather !== 'sunny') {

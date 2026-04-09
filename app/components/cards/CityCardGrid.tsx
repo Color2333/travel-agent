@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { getCityByName } from '@/lib/cities/utils';
 import { WEATHER_CONDITION_MAP, type City, type WeatherData } from '@/types';
@@ -11,11 +12,24 @@ type WeatherDataWithTransport = WeatherData & Partial<Pick<City, 'distance' | 't
 
 interface CityCardGridProps {
   weatherData: WeatherData[];
+  selectedCity?: string | null;
   onCityClick?: (cityName: string) => void;
 }
 
-export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridProps) {
+export default function CityCardGrid({ weatherData, selectedCity, onCityClick }: CityCardGridProps) {
   const sortedWeatherData = [...weatherData].sort((a, b) => b.score - a.score) as WeatherDataWithTransport[];
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    if (!selectedCity) return;
+
+    const target = itemRefs.current[selectedCity];
+    target?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }, [selectedCity]);
 
   if (sortedWeatherData.length === 0) {
     return (
@@ -43,13 +57,13 @@ export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridP
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {sortedWeatherData.map((data, index) => {
-          // Build city object: coords from DB, transport from planTrip result (fixes transport data loss bug)
+          // Prefer dynamic coords from planTrip/QWeather; fall back to local DB only when needed.
           const dbCity = getCityByName(data.city);
           const city: City = {
             name: data.city,
-            lat: dbCity?.lat ?? 31.2304,
-            lng: dbCity?.lng ?? 121.4737,
-            qweatherId: dbCity?.qweatherId,
+            lat: data.lat ?? dbCity?.lat ?? 31.2304,
+            lng: data.lng ?? dbCity?.lng ?? 121.4737,
+            qweatherId: data.qweatherId ?? dbCity?.qweatherId,
             distance: data.distance,
             trainTime: data.trainTime,
             driveTime: data.driveTime,
@@ -65,14 +79,21 @@ export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridP
           };
 
           return (
-            <CityCard
+            <div
               key={data.city}
-              city={city}
-              weather={weather}
-              onClick={() => onCityClick?.(data.city)}
-              isHighlighted={index < 3}
-              rank={index + 1}
-            />
+              ref={(node) => {
+                itemRefs.current[data.city] = node;
+              }}
+            >
+              <CityCard
+                city={city}
+                weather={weather}
+                onClick={() => onCityClick?.(data.city)}
+                isActive={selectedCity === data.city}
+                isHighlighted={index < 3}
+                rank={index + 1}
+              />
+            </div>
           );
         })}
       </div>
