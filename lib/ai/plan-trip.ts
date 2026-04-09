@@ -1,7 +1,6 @@
 import type { WeatherData } from '../../types/index.ts';
-import { RequestValidationError } from '../errors.ts';
-import { getNearbyCities } from '../cities/utils.ts';
-import { CITY_DATABASE } from '../cities/data.ts';
+import { resolveOriginCity } from '../cities/lookup.ts';
+import { findNearbyFromCoords } from '../cities/utils.ts';
 import { fetchWeather, fetchWeatherById } from '../weather/api.ts';
 import { weatherCache } from '../weather/cache.ts';
 
@@ -18,18 +17,29 @@ export type TripCityFailure = {
 
 export async function planTrip(city: string, date: string, maxDistance: number = 300) {
   try {
-    const nearbyCities = getNearbyCities(city, maxDistance);
-    if (nearbyCities.length === 0) {
-      if (!(city in CITY_DATABASE)) {
-        throw new RequestValidationError(`暂不支持 ${city} 的周边城市查询，目前仅支持上海出发`);
-      }
-      const allNearby = getNearbyCities(city, Infinity);
-      const minDist = Math.min(...allNearby.map((c) => c.distance ?? 0));
-      throw new RequestValidationError(
-        `${city} 周边 ${maxDistance}km 内暂无支持的城市，最近的城市约 ${minDist}km，请适当增大搜索范围`
-      );
+    // Resolve origin city → coordinates (local DB first, then QWeather Geo API)
+    const origin = await resolveOriginCity(city);
+    if (!origin) {
+      return {
+        origin: city,
+        date,
+        error: `无法识别城市"${city}"，请检查城市名称是否正确`,
+        cities: [],
+      };
     }
 
+    // Find nearby cities from our comprehensive DB using Haversine
+    const nearbyCities = findNearbyFromCoords(origin.lat, origin.lng, maxDistance, origin.name);
+    if (nearbyCities.length === 0) {
+      return {
+        origin: city,
+        date,
+        error: `${city} 周边 ${maxDistance}km 内暂无数据，可尝试增大搜索范围（最大 1000km）`,
+        cities: [],
+      };
+    }
+
+    // Batch fetch weather for all nearby cities
     const results = await Promise.all(
       nearbyCities.map(async (c) => {
         try {
@@ -74,9 +84,17 @@ export async function planTrip(city: string, date: string, maxDistance: number =
     const sunny = validResults.filter((r) => r.weather === 'sunny').length;
     const cloudy = validResults.filter((r) => r.weather === 'cloudy').length;
     const rainy = validResults.filter((r) => r.weather === 'rainy').length;
-    const other = validResults.length - sunny - cloudy - rainy;
+    const snowy = validResults.filter((r) => r.weather === 'snowy').length;
+    const overcast = validResults.length - sunny - cloudy - rainy - snowy;
 
-    const summary = `${validResults.length}个城市中，${sunny ? sunny + '个晴天' : ''}${cloudy ? (sunny ? '、' : '') + cloudy + '个多云' : ''}${rainy ? (sunny || cloudy ? '、' : '') + rainy + '个雨天' : ''}${other ? (sunny || cloudy || rainy ? '、' : '') + other + '个其他' : ''}`;
+    const parts = [
+      sunny && `${sunny}个晴天`,
+      cloudy && `${cloudy}个多云`,
+      rainy && `${rainy}个雨天`,
+      snowy && `${snowy}个雪天`,
+      overcast && `${overcast}个阴天`,
+    ].filter(Boolean);
+    const summary = `${validResults.length}个城市中，${parts.join('、')}`;
 
     const goodOptions = validResults.filter((r) => r.score >= 70).map((r) => ({
       city: r.city,
@@ -96,15 +114,16 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       reason: r.weatherText?.includes('雨') ? '有降雨，不建议出行' : '天气较差',
     }));
 
-    const topRecommendation = validResults.length > 0 ? {
-      city: validResults[0].city,
-      score: validResults[0].score,
-      weather: validResults[0].weatherText,
-      tempHigh: validResults[0].tempHigh,
-      tempLow: validResults[0].tempLow,
-      trainTime: validResults[0].trainTime,
-      reason: `天气评分最高(${validResults[0].score}分)`,
-    } : null;
+    const top = validResults[0];
+    const topRecommendation = {
+      city: top.city,
+      score: top.score,
+      weather: top.weatherText,
+      tempHigh: top.tempHigh,
+      tempLow: top.tempLow,
+      trainTime: top.trainTime,
+      reason: `天气评分最高(${top.score}分)`,
+    };
 
     return {
       origin: city,

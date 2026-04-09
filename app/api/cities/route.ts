@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getNearbyCities } from '@/lib/cities/utils';
+import { resolveOriginCity } from '@/lib/cities/lookup';
+import { findNearbyFromCoords } from '@/lib/cities/utils';
 import type { City } from '@/types';
-import { ResourceNotFoundError, getErrorStatus } from '@/lib/errors';
+import { getErrorStatus } from '@/lib/errors';
 import { citiesQuerySchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
@@ -20,23 +21,29 @@ export async function GET(request: Request): Promise<NextResponse<CitiesResponse
   });
 
   if (!parseResult.success) {
-    return NextResponse.json({ error: parseResult.error.issues[0]?.message ?? 'Invalid query parameters' }, { status: 400 });
+    return NextResponse.json(
+      { error: parseResult.error.issues[0]?.message ?? 'Invalid query parameters' },
+      { status: 400 },
+    );
   }
 
   const { city, maxDistance } = parseResult.data;
 
   try {
-    const cities = getNearbyCities(city, maxDistance);
-    if (cities.length === 0) {
-      throw new ResourceNotFoundError(`No supported nearby cities found for origin: ${city}`);
+    const origin = await resolveOriginCity(city);
+    if (!origin) {
+      return NextResponse.json({ error: `无法识别城市"${city}"` }, { status: 404 });
     }
 
-    const response: CitiesResponse = {
-      origin: city,
-      cities,
-      count: cities.length,
-    };
-    return NextResponse.json(response);
+    const cities = findNearbyFromCoords(origin.lat, origin.lng, maxDistance, origin.name);
+    if (cities.length === 0) {
+      return NextResponse.json(
+        { error: `${city} 周边 ${maxDistance}km 内暂无数据` },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ origin: origin.name, cities, count: cities.length });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch nearby cities';
     return NextResponse.json({ error: errorMessage }, { status: getErrorStatus(error) });

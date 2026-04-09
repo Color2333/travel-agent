@@ -7,9 +7,9 @@ import { cityNameSchema, forecastDateSchema, positiveIntegerDistanceSchema } fro
 
 export const tools = {
   get_location: tool({
-    description: '获取用户当前城市位置',
+    description: '获取用户当前城市位置。如果用户已明确说明所在城市，直接使用用户提供的城市名，无需调用此工具。',
     inputSchema: z.object({}),
-    execute: async () => ({ city: '上海', lat: 31.2304, lng: 121.4737 }),
+    execute: async () => ({ city: '上海', lat: 31.2304, lng: 121.4737, note: '默认返回上海，若用户提到了其他城市请以用户说的为准' }),
   }),
 
   parse_date: tool({

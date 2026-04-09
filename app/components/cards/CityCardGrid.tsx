@@ -1,7 +1,7 @@
 'use client';
 
 import { MapPin } from 'lucide-react';
-import { CITY_DATABASE } from '@/lib/cities/data';
+import { getCityByName } from '@/lib/cities/utils';
 import { WEATHER_CONDITION_MAP, type WeatherData } from '@/types';
 import CityCard from './CityCard';
 
@@ -24,17 +24,8 @@ export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridP
   }
 
   const getCityFromDatabase = (cityName: string) => {
-    const direct = CITY_DATABASE[cityName];
-    if (direct) {
-      return { name: direct.name, lat: direct.lat, lng: direct.lng };
-    }
-    for (const city of Object.values(CITY_DATABASE)) {
-      const nearby = city.nearby.find((n) => n.name === cityName);
-      if (nearby) {
-        return nearby;
-      }
-    }
-    return { name: cityName, lat: 31.2304, lng: 121.4737 };
+    const found = getCityByName(cityName);
+    return found ?? { name: cityName, lat: 31.2304, lng: 121.4737 };
   };
 
   return (

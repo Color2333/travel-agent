@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { WEATHER_CONDITION_MAP, type WeatherData } from '@/types'
-import { CITY_DATABASE } from '@/lib/cities/data'
+import { getCityByName } from '@/lib/cities/utils'
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -36,17 +36,8 @@ export default function MapInner({ weatherData, className }: MapInnerProps) {
   }
 
   const getCityPosition = (cityName: string): [number, number] => {
-    const city = CITY_DATABASE[cityName]
-    if (city) {
-      return [city.lat, city.lng]
-    }
-    for (const city of Object.values(CITY_DATABASE)) {
-      const nearby = city.nearby.find((n) => n.name === cityName)
-      if (nearby) {
-        return [nearby.lat, nearby.lng]
-      }
-    }
-    return [31.2304, 121.4737]
+    const found = getCityByName(cityName)
+    return found ? [found.lat, found.lng] : [31.2304, 121.4737]
   }
 
   return (
