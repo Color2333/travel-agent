@@ -24,12 +24,26 @@ function formatDuration(hours: number): string {
   return `${half} 小时`;
 }
 
-export function estimateTransitTimes(km: number): { trainTime: string; driveTime: string } {
+export function estimateTransitTimes(km: number): {
+  trainTime: string;
+  driveTime: string;
+  trainPrice: string;
+  drivePrice: string;
+} {
   // HSR effective speed ~300 km/h; add 15 min fixed boarding overhead
   const trainH = 15 / 60 + km / 300;
   // Highway driving ~80 km/h
   const driveH = km / 80;
-  return { trainTime: formatDuration(trainH), driveTime: formatDuration(driveH) };
+  // HSR 2nd class fare: ~0.47 yuan/km (matches real G-train pricing)
+  const trainYuan = Math.round(km * 0.47 / 5) * 5; // round to nearest 5
+  // Driving total cost: ~0.6 yuan/km fuel + ~0.5 yuan/km highway toll
+  const driveYuan = Math.round(km * 1.1 / 10) * 10; // round to nearest 10
+  return {
+    trainTime: formatDuration(trainH),
+    driveTime: formatDuration(driveH),
+    trainPrice: `约¥${trainYuan}`,
+    drivePrice: `约¥${driveYuan}`,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -49,7 +63,7 @@ export function findNearbyFromCoords(
     if (excludeName && city.name === excludeName) continue;
     const dist = Math.round(haversineDistance(originLat, originLng, city.lat, city.lng));
     if (dist <= maxDistance) {
-      const { trainTime, driveTime } = estimateTransitTimes(dist);
+      const { trainTime, driveTime, trainPrice, drivePrice } = estimateTransitTimes(dist);
       results.push({
         name: city.name,
         lat: city.lat,
@@ -58,6 +72,8 @@ export function findNearbyFromCoords(
         distance: dist,
         trainTime,
         driveTime,
+        trainPrice,
+        drivePrice,
       });
     }
   }

@@ -2,8 +2,12 @@
 
 import { MapPin } from 'lucide-react';
 import { getCityByName } from '@/lib/cities/utils';
-import { WEATHER_CONDITION_MAP, type WeatherData } from '@/types';
+import { WEATHER_CONDITION_MAP, type City, type WeatherData } from '@/types';
 import CityCard from './CityCard';
+
+// At runtime, WeatherData from planTrip includes transport fields merged in.
+// We use this intersection to avoid any[] casts while preserving type safety.
+type WeatherDataWithTransport = WeatherData & Partial<Pick<City, 'distance' | 'trainTime' | 'driveTime' | 'trainPrice' | 'drivePrice' | 'province'>>;
 
 interface CityCardGridProps {
   weatherData: WeatherData[];
@@ -11,7 +15,7 @@ interface CityCardGridProps {
 }
 
 export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridProps) {
-  const sortedWeatherData = [...weatherData].sort((a, b) => b.score - a.score);
+  const sortedWeatherData = [...weatherData].sort((a, b) => b.score - a.score) as WeatherDataWithTransport[];
 
   if (sortedWeatherData.length === 0) {
     return (
@@ -22,11 +26,6 @@ export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridP
       </div>
     );
   }
-
-  const getCityFromDatabase = (cityName: string) => {
-    const found = getCityByName(cityName);
-    return found ?? { name: cityName, lat: 31.2304, lng: 121.4737 };
-  };
 
   return (
     <div>
@@ -44,20 +43,34 @@ export default function CityCardGrid({ weatherData, onCityClick }: CityCardGridP
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {sortedWeatherData.map((data, index) => {
-          const city = getCityFromDatabase(data.city);
+          // Build city object: coords from DB, transport from planTrip result (fixes transport data loss bug)
+          const dbCity = getCityByName(data.city);
+          const city: City = {
+            name: data.city,
+            lat: dbCity?.lat ?? 31.2304,
+            lng: dbCity?.lng ?? 121.4737,
+            qweatherId: dbCity?.qweatherId,
+            distance: data.distance,
+            trainTime: data.trainTime,
+            driveTime: data.driveTime,
+            trainPrice: data.trainPrice,
+            drivePrice: data.drivePrice,
+            province: data.province,
+          };
+
           const weather: WeatherData = {
             ...data,
             weatherIcon: WEATHER_CONDITION_MAP[data.weather]?.icon,
-            weatherText: WEATHER_CONDITION_MAP[data.weather]?.label,
+            weatherText: data.weatherText || WEATHER_CONDITION_MAP[data.weather]?.label,
           };
-          const isTopThree = index < 3;
+
           return (
             <CityCard
               key={data.city}
               city={city}
               weather={weather}
               onClick={() => onCityClick?.(data.city)}
-              isHighlighted={isTopThree}
+              isHighlighted={index < 3}
               rank={index + 1}
             />
           );

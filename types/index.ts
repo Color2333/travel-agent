@@ -5,7 +5,10 @@ export interface City {
   distance?: number;
   trainTime?: string;
   driveTime?: string;
+  trainPrice?: string;
+  drivePrice?: string;
   qweatherId?: string;
+  province?: string;
 }
 
 export type WeatherCondition = 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'overcast';

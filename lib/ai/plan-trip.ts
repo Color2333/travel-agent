@@ -1,5 +1,5 @@
-import type { WeatherData } from '../../types/index.ts';
-import { resolveOriginCity } from '../cities/lookup.ts';
+import type { City, WeatherData } from '../../types/index.ts';
+import { resolveOriginCity, searchQWeatherNearbyCities } from '../cities/lookup.ts';
 import { findNearbyFromCoords } from '../cities/utils.ts';
 import { fetchWeather, fetchWeatherById } from '../weather/api.ts';
 import { weatherCache } from '../weather/cache.ts';
@@ -8,6 +8,9 @@ export type TripWeatherResult = WeatherData & {
   distance: number | undefined;
   trainTime: string | undefined;
   driveTime: string | undefined;
+  trainPrice: string | undefined;
+  drivePrice: string | undefined;
+  province: string | undefined;
 };
 
 export type TripCityFailure = {
@@ -15,9 +18,37 @@ export type TripCityFailure = {
   error: string;
 };
 
+/**
+ * Finds nearby cities using QWeather's full city database (coordinate-based search).
+ * Falls back to our static 65-city DB if QWeather returns too few results.
+ */
+async function resolveNearbyCities(
+  originLat: number,
+  originLng: number,
+  maxDistance: number,
+  excludeName: string,
+): Promise<City[]> {
+  try {
+    const qwCities = await searchQWeatherNearbyCities(originLat, originLng, maxDistance, excludeName);
+    if (qwCities.length >= 3) return qwCities;
+
+    // QWeather returned too few (e.g., sparse region) — supplement with static DB
+    const staticCities = findNearbyFromCoords(originLat, originLng, maxDistance, excludeName);
+    if (qwCities.length === 0) return staticCities;
+
+    // Merge: QWeather results take priority (have real IDs), static fills gaps
+    const qwNames = new Set(qwCities.map((c) => c.name));
+    const supplement = staticCities.filter((c) => !qwNames.has(c.name));
+    return [...qwCities, ...supplement].sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+  } catch {
+    // QWeather unavailable — use static DB
+    return findNearbyFromCoords(originLat, originLng, maxDistance, excludeName);
+  }
+}
+
 export async function planTrip(city: string, date: string, maxDistance: number = 300) {
   try {
-    // Resolve origin city → coordinates (local DB first, then QWeather Geo API)
+    // 1. Resolve origin city coordinates
     const origin = await resolveOriginCity(city);
     if (!origin) {
       return {
@@ -28,8 +59,8 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       };
     }
 
-    // Find nearby cities from our comprehensive DB using Haversine
-    const nearbyCities = findNearbyFromCoords(origin.lat, origin.lng, maxDistance, origin.name);
+    // 2. Find nearby cities (QWeather full DB + static fallback)
+    const nearbyCities = await resolveNearbyCities(origin.lat, origin.lng, maxDistance, origin.name);
     if (nearbyCities.length === 0) {
       return {
         origin: city,
@@ -39,13 +70,21 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       };
     }
 
-    // Batch fetch weather for all nearby cities
+    // 3. Batch fetch weather for all nearby cities
     const results = await Promise.all(
       nearbyCities.map(async (c) => {
         try {
           const cached = weatherCache.get(c.name, date);
           if (cached) {
-            return { ...cached, distance: c.distance, trainTime: c.trainTime, driveTime: c.driveTime };
+            return {
+              ...cached,
+              distance: c.distance,
+              trainTime: c.trainTime,
+              driveTime: c.driveTime,
+              trainPrice: c.trainPrice,
+              drivePrice: c.drivePrice,
+              province: c.province,
+            };
           }
 
           let weather: WeatherData;
@@ -56,7 +95,15 @@ export async function planTrip(city: string, date: string, maxDistance: number =
           }
 
           weatherCache.set(c.name, date, weather);
-          return { ...weather, distance: c.distance, trainTime: c.trainTime, driveTime: c.driveTime };
+          return {
+            ...weather,
+            distance: c.distance,
+            trainTime: c.trainTime,
+            driveTime: c.driveTime,
+            trainPrice: c.trainPrice,
+            drivePrice: c.drivePrice,
+            province: c.province,
+          };
         } catch (error) {
           return {
             city: c.name,
@@ -66,8 +113,8 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       })
     );
 
-    const failedCities = results.filter((result): result is TripCityFailure => 'error' in result);
-    const validResults = results.filter((result): result is TripWeatherResult => !('error' in result));
+    const failedCities = results.filter((r): r is TripCityFailure => 'error' in r);
+    const validResults = results.filter((r): r is TripWeatherResult => !('error' in r));
 
     if (validResults.length === 0) {
       return {
@@ -104,6 +151,7 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       tempLow: r.tempLow,
       rainProbability: r.rainProbability,
       trainTime: r.trainTime,
+      trainPrice: r.trainPrice,
       reason: r.score >= 85 ? '天气优秀，强烈推荐' : '天气不错，适合出行',
     }));
 
@@ -122,6 +170,7 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       tempHigh: top.tempHigh,
       tempLow: top.tempLow,
       trainTime: top.trainTime,
+      trainPrice: top.trainPrice,
       reason: `天气评分最高(${top.score}分)`,
     };
 
