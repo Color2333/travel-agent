@@ -27,7 +27,7 @@
 npm install
 
 # 配置环境变量
-cp .env.example .env.local
+cp .env.local.example .env.local
 # 填入你的 API Key
 
 # 启动开发服务器
@@ -43,10 +43,24 @@ npm run dev
 ```
 # 智谱 AI（必需）
 OPENAI_API_KEY=your_zhipu_api_key
+OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
 
 # 和风天气（必需）
-QWEATHER_API_KEY=your_qweather_key
-QWEATHER_API_HOST=your_api_host
+WEATHER_API_KEY=your_qweather_key
+WEATHER_API_HOST=your_api_host.re.qweatherapi.com
+```
+
+## 测试
+
+```bash
+# 日期解析单元测试
+npm run test:unit
+
+# 后端边界输入 smoke test
+npm run test:backend
+
+# 后端成功链路测试（本地 mock 天气服务）
+npm run test:backend-success
 ```
 
 ## 项目结构

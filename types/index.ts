@@ -62,12 +62,13 @@ export interface ChatMessage {
   referencedCities?: string[];
 }
 
-export type AIProvider = 'openai' | 'zhipu' | 'aliyun' | 'anthropic';
+export type AIProvider = 'openai' | 'zhipu';
 
 export interface AIConfig {
   provider: AIProvider;
   model: string;
   apiKey: string;
+  baseURL?: string;
   temperature: number;
   maxTokens: number;
   systemPrompt?: string;

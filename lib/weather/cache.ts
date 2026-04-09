@@ -1,4 +1,4 @@
-import type { WeatherData } from '@/types';
+import type { WeatherData } from '../../types/index.ts';
 
 const CACHE_DURATION = 60 * 60 * 1000;
 

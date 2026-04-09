@@ -10,15 +10,13 @@ interface SettingsModalProps {
 }
 
 const PROVIDERS: { value: AIProvider; label: string; models: string[]; description: string }[] = [
-  { value: 'openai', label: 'OpenAI', models: ['gpt-4o', 'gpt-4o-mini'], description: '强大的通用模型，推荐日常使用' },
-  { value: 'zhipu', label: '智谱 AI', models: ['glm-4', 'glm-3-turbo'], description: '国产大模型，中文理解优秀' },
-  { value: 'aliyun', label: '阿里云', models: ['qwen-max', 'qwen-turbo'], description: '通义千问系列，性价比高' },
-  { value: 'anthropic', label: 'Anthropic', models: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-latest'], description: 'Claude 系列，推理能力强' },
+  { value: 'openai', label: 'OpenAI', models: ['gpt-4o-mini', 'gpt-4o'], description: '使用 OpenAI 兼容接口，适合通用对话' },
+  { value: 'zhipu', label: '智谱 AI', models: ['glm-4.7', 'glm-4'], description: '默认配置，适合中文旅行场景' },
 ];
 
 const DEFAULT_CONFIG: AIConfig = {
-  provider: 'openai',
-  model: 'gpt-4o',
+  provider: 'zhipu',
+  model: 'glm-4.7',
   apiKey: '',
   temperature: 0.7,
   maxTokens: 2048,
@@ -155,6 +153,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <Key className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
               <p className="text-xs text-gray-500">API Key 仅存储在本地浏览器中</p>
+              <p className="text-xs text-gray-500">留空时使用服务端环境变量</p>
             </div>
           </div>
 

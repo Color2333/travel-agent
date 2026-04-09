@@ -1,4 +1,4 @@
-import type { City } from '@/types';
+import type { City } from '../../types/index.ts';
 
 export const CITY_DATABASE: Record<string, City & { nearby: City[] }> = {
   '上海': {

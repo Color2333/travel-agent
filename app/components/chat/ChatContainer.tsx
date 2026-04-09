@@ -12,6 +12,7 @@ interface Config {
   provider: string;
   model: string;
   apiKey: string;
+  baseURL?: string;
   temperature: number;
   maxTokens: number;
   systemPrompt?: string;

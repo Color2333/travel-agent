@@ -1,9 +1,13 @@
-import type { WeatherData, WeatherCondition } from '@/types';
-import { getCityByName } from '@/lib/cities/utils';
+import type { WeatherData, WeatherCondition } from '../../types/index.ts';
+import { getCityByName } from '../cities/utils.ts';
+import { ResourceNotFoundError, UpstreamServiceError } from '../errors.ts';
 
-const API_HOST = process.env.WEATHER_API_HOST || 'ma5pwe7m85.re.qweatherapi.com';
-const GEO_API_BASE = `https://${API_HOST}/geo/v2`;
-const WEATHER_API_BASE = `https://${API_HOST}/v7`;
+const RAW_API_HOST = process.env.WEATHER_API_HOST || 'ma5pwe7m85.re.qweatherapi.com';
+const API_ORIGIN = RAW_API_HOST.startsWith('http://') || RAW_API_HOST.startsWith('https://')
+  ? RAW_API_HOST
+  : `https://${RAW_API_HOST}`;
+const GEO_API_BASE = `${API_ORIGIN}/geo/v2`;
+const WEATHER_API_BASE = `${API_ORIGIN}/v7`;
 
 function getApiKey(): string {
   const key = process.env.WEATHER_API_KEY;
@@ -108,16 +112,27 @@ function buildWeatherData(dayForecast: Record<string, string>, cityName: string,
   };
 }
 
+const FETCH_TIMEOUT_MS = 10_000;
+
 export async function fetchWeatherById(cityId: string, cityName: string, date: string): Promise<WeatherData> {
   const apiKey = getApiKey();
-  const res = await fetch(`${WEATHER_API_BASE}/weather/7d?location=${cityId}&key=${apiKey}`);
+  const res = await fetch(`${WEATHER_API_BASE}/weather/7d?location=${cityId}&key=${apiKey}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    throw new UpstreamServiceError(`Weather service request failed for ${cityName}`);
+  }
+
   const data = await res.json();
 
-  if (data.error) throw new Error(`QWeather API error: ${data.error.title}`);
-  if (!data.daily) throw new Error(`Weather data not available for: ${cityName}`);
+  // QWeather returns HTTP 200 for all responses; actual success is indicated by code === '200'
+  if (data.code && data.code !== '200') {
+    throw new UpstreamServiceError(`QWeather API error (code ${data.code}) for: ${cityName}`);
+  }
+  if (!data.daily) throw new UpstreamServiceError(`Weather data not available for: ${cityName}`);
 
   const day = data.daily.find((d: { fxDate: string }) => d.fxDate === date);
-  if (!day) throw new Error(`No forecast for ${date} in ${cityName}`);
+  if (!day) throw new ResourceNotFoundError(`No forecast for ${date} in ${cityName}`);
 
   return buildWeatherData(day, cityName, date);
 }
@@ -130,11 +145,17 @@ export async function fetchWeather(city: string, date: string): Promise<WeatherD
     return fetchWeatherById(cityInfo.qweatherId, cityInfo.name, date);
   }
 
-  const geoRes = await fetch(`${GEO_API_BASE}/city/lookup?location=${encodeURIComponent(city)}&key=${apiKey}`);
+  const geoRes = await fetch(`${GEO_API_BASE}/city/lookup?location=${encodeURIComponent(city)}&key=${apiKey}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!geoRes.ok) {
+    throw new UpstreamServiceError(`Geo lookup failed for city: ${city}`);
+  }
+
   const geoData = await geoRes.json();
 
-  if (geoData.error) throw new Error(`QWeather error: ${geoData.error.title}`);
-  if (!geoData.location?.length) throw new Error(`City not found: ${city}`);
+  if (geoData.code && geoData.code !== '200') throw new UpstreamServiceError(`QWeather geo error (code ${geoData.code}) for: ${city}`);
+  if (!geoData.location?.length) throw new ResourceNotFoundError(`City not found: ${city}`);
 
   const cityId = geoData.location[0].id;
   const cityName = geoData.location[0].name;

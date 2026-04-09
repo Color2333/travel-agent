@@ -1,25 +1,21 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import type { WeatherData } from '@/types';
+import { getErrorStatus } from '@/lib/errors';
+import { weatherQuerySchema } from '@/lib/validation';
 import { fetchWeather } from '@/lib/weather/api';
 import { weatherCache } from '@/lib/weather/cache';
 
 export const runtime = 'nodejs';
 
-const querySchema = z.object({
-  city: z.string().min(1),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-});
-
 export async function GET(request: Request): Promise<NextResponse<WeatherData | { error: string }>> {
   const { searchParams } = new URL(request.url);
-  const city = searchParams.get('city');
-  const date = searchParams.get('date');
-
-  const parseResult = querySchema.safeParse({ city, date });
+  const parseResult = weatherQuerySchema.safeParse({
+    city: searchParams.get('city'),
+    date: searchParams.get('date'),
+  });
 
   if (!parseResult.success) {
-    return NextResponse.json({ error: 'Invalid or missing parameters: city and date (YYYY-MM-DD) are required' }, { status: 400 });
+    return NextResponse.json({ error: parseResult.error.issues[0]?.message ?? 'Invalid query parameters' }, { status: 400 });
   }
 
   const { city: cityParam, date: dateParam } = parseResult.data;
@@ -35,6 +31,6 @@ export async function GET(request: Request): Promise<NextResponse<WeatherData | 
     return NextResponse.json(weather);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weather';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: getErrorStatus(error) });
   }
 }

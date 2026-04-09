@@ -1,5 +1,5 @@
-import { CITY_DATABASE } from './data';
-import type { City } from '@/types';
+import { CITY_DATABASE } from './data.ts';
+import type { City } from '../../types/index.ts';
 
 export function getNearbyCities(cityName: string, maxDistance: number = 300): City[] {
   const city = CITY_DATABASE[cityName];

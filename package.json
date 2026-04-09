@@ -2,11 +2,16 @@
   "name": "travel-agent-init",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:unit": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/*.test.ts",
+    "test:backend": "node scripts/backend-smoke-test.mjs",
+    "test:backend-success": "node scripts/backend-success-test.mjs",
+    "test:agent-provider": "node scripts/agent-provider-test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.52",
