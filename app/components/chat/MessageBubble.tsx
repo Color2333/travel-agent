@@ -147,7 +147,7 @@ function renderInline(text: string, isUser: boolean) {
       return (
         <code
           key={`${token}-${index}`}
-          className={`rounded-md px-1.5 py-0.5 text-[0.92em] ${isUser ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'}`}
+          className={`rounded-md px-1.5 py-0.5 text-[0.92em] ${isUser ? 'bg-white/20 text-white' : 'bg-white/12 text-sky-100'}`}
         >
           {token.slice(1, -1)}
         </code>
@@ -156,7 +156,7 @@ function renderInline(text: string, isUser: boolean) {
 
     if ((token.startsWith('**') && token.endsWith('**')) || (token.startsWith('__') && token.endsWith('__'))) {
       return (
-        <strong key={`${token}-${index}`} className={isUser ? 'font-semibold text-white' : 'font-semibold text-slate-900'}>
+        <strong key={`${token}-${index}`} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-50'}>
           {token.slice(2, -2)}
         </strong>
       );
@@ -172,16 +172,16 @@ function highlightContent(content: string, isUser: boolean, offset: number = 0):
   return parts.map((part, index) => {
     const key = `${part}-${offset}-${index}`;
     if (/^\d+°[Cc]?$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-600'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-100'}>{part}</span>;
     }
     if (/^[\u4e00-\u9fa5]{2,}(?:市|县|区|镇|乡)$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-slate-900'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-white'}>{part}</span>;
     }
     if (/^\d+%$/.test(part) || /^评分\s*\d+$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-emerald-600'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-emerald-100'}>{part}</span>;
     }
     if (/^(推荐|适合|不适合|高铁|自驾|通勤|风险)$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-slate-800'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-white'}>{part}</span>;
     }
     return <span key={key}>{part}</span>;
   });
@@ -191,16 +191,16 @@ function AssistantRichContent({ content }: { content: string }) {
   const blocks = parseMarkdownBlocks(content);
 
   if (blocks.length === 0) {
-    return <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700">{content}</p>;
+    return <p className="whitespace-pre-wrap text-[15px] leading-7 text-white/86">{content}</p>;
   }
 
   return (
-    <div className="space-y-3 text-[15px] leading-7 text-slate-700">
+    <div className="space-y-3 text-[15px] leading-7 text-white/86">
       {blocks.map((block, index) => {
         if (block.type === 'heading') {
           const sizeClass = block.level === 1 ? 'text-lg' : block.level === 2 ? 'text-base' : 'text-sm';
           return (
-            <h3 key={`heading-${index}`} className={`${sizeClass} font-semibold tracking-tight text-slate-900`}>
+            <h3 key={`heading-${index}`} className={`${sizeClass} font-semibold tracking-tight text-white`}>
               {renderInline(block.text, false)}
             </h3>
           );
@@ -214,7 +214,7 @@ function AssistantRichContent({ content }: { content: string }) {
               className={`space-y-2 pl-5 ${block.ordered ? 'list-decimal' : 'list-disc'} marker:text-sky-500`}
             >
               {block.items.map((item, itemIndex) => (
-                <li key={`item-${itemIndex}`} className="text-slate-700">
+                <li key={`item-${itemIndex}`} className="text-white/82">
                   {renderInline(item, false)}
                 </li>
               ))}
@@ -224,7 +224,7 @@ function AssistantRichContent({ content }: { content: string }) {
 
         if (block.type === 'quote') {
           return (
-            <div key={`quote-${index}`} className="rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-slate-700">
+            <div key={`quote-${index}`} className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-white/82">
               {block.text.split('\n').map((line, lineIndex) => (
                 <p key={`quote-line-${lineIndex}`}>{renderInline(line, false)}</p>
               ))}
@@ -234,10 +234,10 @@ function AssistantRichContent({ content }: { content: string }) {
 
         if (block.type === 'table') {
           return (
-            <div key={`table-${index}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white/85 shadow-sm">
+            <div key={`table-${index}`} className="overflow-hidden rounded-2xl border border-white/12 bg-white/10 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500">
+                  <thead className="bg-white/8 text-white/56">
                     <tr>
                       {block.headers.map((header, headerIndex) => (
                         <th key={`header-${headerIndex}`} className="px-4 py-3 font-semibold">
@@ -248,9 +248,9 @@ function AssistantRichContent({ content }: { content: string }) {
                   </thead>
                   <tbody>
                     {block.rows.map((row, rowIndex) => (
-                      <tr key={`row-${rowIndex}`} className="border-t border-slate-100">
+                      <tr key={`row-${rowIndex}`} className="border-t border-white/10">
                         {row.map((cell, cellIndex) => (
-                          <td key={`cell-${rowIndex}-${cellIndex}`} className="px-4 py-3 text-slate-700">
+                          <td key={`cell-${rowIndex}-${cellIndex}`} className="px-4 py-3 text-white/82">
                             {renderInline(cell, false)}
                           </td>
                         ))}
@@ -264,7 +264,7 @@ function AssistantRichContent({ content }: { content: string }) {
         }
 
         return (
-          <p key={`paragraph-${index}`} className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700">
+          <p key={`paragraph-${index}`} className="whitespace-pre-wrap text-[15px] leading-7 text-white/82">
             {renderInline(block.text, false)}
           </p>
         );
@@ -278,9 +278,9 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className={`flex items-end gap-2.5 sm:gap-3 animate-slide-up ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl ${isUser ? 'bg-sky-100' : 'bg-gradient-to-br from-sky-500 to-blue-600 shadow-lg shadow-sky-200/80'}`}>
+      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl ${isUser ? 'bg-white/14 text-white backdrop-blur-xl' : 'bg-[linear-gradient(135deg,rgba(125,211,252,0.84),rgba(59,130,246,0.94))] shadow-[0_12px_30px_rgba(59,130,246,0.26)]'}`}>
         {isUser ? (
-          <User className="h-4 w-4 text-sky-700" />
+          <User className="h-4 w-4 text-white" />
         ) : (
           <Sparkles className="h-4 w-4 text-white" />
         )}
@@ -290,8 +290,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={`rounded-[26px] px-4 py-3.5 shadow-sm ${
             isUser
-              ? 'rounded-br-lg bg-[linear-gradient(135deg,#3b82f6_0%,#2563eb_52%,#1d4ed8_100%)] text-white shadow-[0_18px_45px_rgba(37,99,235,0.22)]'
-              : 'rounded-bl-lg border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] text-slate-800 shadow-[0_18px_45px_rgba(148,163,184,0.14)]'
+              ? 'rounded-br-lg border border-white/12 bg-[linear-gradient(135deg,rgba(59,130,246,0.9),rgba(37,99,235,0.96))] text-white shadow-[0_18px_44px_rgba(37,99,235,0.22)] backdrop-blur-xl'
+              : 'rounded-bl-lg border border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.08))] text-white shadow-[0_18px_45px_rgba(15,23,42,0.1)] backdrop-blur-[24px]'
           }`}
         >
           {isUser ? (
@@ -304,8 +304,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={`absolute bottom-0 h-3 w-3 ${
             isUser
-              ? 'right-0 translate-x-[22%] bg-blue-700'
-              : 'left-0 -translate-x-[22%] border-l border-b border-white/70 bg-white'
+              ? 'right-0 translate-x-[22%] bg-blue-700/90'
+              : 'left-0 -translate-x-[22%] border-l border-b border-white/16 bg-white/16 backdrop-blur-xl'
           }`}
           style={{
             clipPath: isUser

@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Cloud, Sun } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { LayoutPanelTop, Map, MessageSquareText } from 'lucide-react';
+import { StageAmbient } from './components/layout/StageAmbient';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/layout/SettingsModal';
+import { StageWorkspace } from './components/layout/StageWorkspace';
 import ChatContainer from './components/chat/ChatContainer';
 import WeatherMap from './components/map/WeatherMap';
 import CityCardGrid from './components/cards/CityCardGrid';
 import DecisionPanel from './components/decision/DecisionPanel';
 import type { TripPlanResult, WeatherData } from '@/types';
+import { useStagePanels, type StagePanelKey } from '@/lib/ui/use-stage-panels';
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -16,6 +19,17 @@ export default function Home() {
   const [tripPlan, setTripPlan] = useState<TripPlanResult | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [queuedPrompt, setQueuedPrompt] = useState<{ id: number; text: string } | null>(null);
+  const {
+    panelStates,
+    activeMobilePanel,
+    focusedPanel,
+    openPanels,
+    minimizedPanels,
+    setActiveMobilePanel,
+    setFocusedPanel,
+    setPanelState,
+    togglePanel,
+  } = useStagePanels();
 
   useEffect(() => {
     if (weatherData.length === 0) {
@@ -32,61 +46,125 @@ export default function Home() {
     });
   }, [weatherData]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-blue-200/40 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-40 right-20 w-96 h-96 bg-sky-200/30 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-indigo-200/20 rounded-full blur-2xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
-      </div>
+  const panelButtons: Array<{ key: StagePanelKey; label: string; icon: typeof MessageSquareText; short: string }> = [
+    { key: 'chat', label: '对话', icon: MessageSquareText, short: 'Chat' },
+    { key: 'decision', label: '决策', icon: LayoutPanelTop, short: 'Decision' },
+    { key: 'cards', label: '城市', icon: Map, short: 'Cities' },
+  ];
 
-      <div className="absolute top-32 right-10 text-white/40 animate-bounce-soft pointer-events-none hidden lg:block">
-        <Cloud className="w-24 h-24" strokeWidth={1} />
-      </div>
-      <div className="absolute bottom-60 left-20 text-yellow-200/50 animate-bounce-soft pointer-events-none hidden lg:block" style={{ animationDelay: '0.5s' }}>
-        <Sun className="w-16 h-16" strokeWidth={1} />
-      </div>
+  const desktopPanels: Array<{
+    key: StagePanelKey;
+    title: string;
+    subtitle: string;
+    positionClass: string;
+    bodyClass: string;
+    content: ReactNode;
+  }> = [
+    {
+      key: 'chat',
+      title: '对话台',
+      subtitle: '自然语言控制地图与策略',
+      positionClass: 'left-6 top-24 bottom-6 w-[390px]',
+      bodyClass: 'h-[calc(100%-4.5rem)]',
+      content: (
+        <ChatContainer
+          onWeatherUpdate={setWeatherData}
+          onPlanUpdate={setTripPlan}
+          queuedPrompt={queuedPrompt}
+          onQueuedPromptHandled={() => setQueuedPrompt(null)}
+        />
+      ),
+    },
+    {
+      key: 'decision',
+      title: '决策台',
+      subtitle: '总结、比较与继续追问',
+      positionClass: 'right-6 top-24 w-[430px] max-h-[40vh]',
+      bodyClass: 'max-h-[calc(40vh-4.5rem)] overflow-y-auto custom-scrollbar',
+      content: (
+        <DecisionPanel
+          tripPlan={tripPlan}
+          selectedCity={selectedCity}
+          weatherData={weatherData}
+          onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
+        />
+      ),
+    },
+    {
+      key: 'cards',
+      title: '城市台',
+      subtitle: '快速筛选候选目的地',
+      positionClass: 'right-6 bottom-6 w-[540px] max-h-[42vh]',
+      bodyClass: 'max-h-[calc(42vh-4.5rem)] overflow-y-auto custom-scrollbar',
+      content: (
+        <CityCardGrid
+          weatherData={weatherData}
+          selectedCity={selectedCity}
+          onCityClick={setSelectedCity}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#dbeafe_0%,#e0f2fe_30%,#f8fafc_100%)]">
+      <StageAmbient />
 
       <Header onSettingsClick={() => setIsSettingsOpen(true)} />
 
-      <main className="relative z-10 mx-auto max-w-[1600px] px-3 sm:px-4 lg:px-6 xl:px-8 pb-6">
-        <div className="grid gap-4 py-4 lg:min-h-[calc(100vh-4rem)] lg:grid-cols-[minmax(360px,420px)_1fr] lg:gap-6">
-          <div className="min-h-[52vh] lg:h-[calc(100vh-6rem)] lg:min-h-0">
-            <ChatContainer
-              onWeatherUpdate={setWeatherData}
-              onPlanUpdate={setTripPlan}
-              queuedPrompt={queuedPrompt}
-              onQueuedPromptHandled={() => setQueuedPrompt(null)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-4 min-h-0">
-            <div className="flex-shrink-0 h-[380px] sm:h-[440px] lg:h-[44vh] lg:min-h-[340px]">
-              <WeatherMap
-                weatherData={weatherData}
-                originCity={tripPlan?.origin}
-                selectedCity={selectedCity}
-                onSelectCity={setSelectedCity}
-                className="h-full w-full rounded-2xl shadow-lg"
-              />
-            </div>
-            <div className="flex-shrink-0">
-              <DecisionPanel
-                tripPlan={tripPlan}
-                selectedCity={selectedCity}
-                weatherData={weatherData}
-                onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
-              />
-            </div>
-            <div className="min-h-0 lg:flex-1 lg:overflow-y-auto custom-scrollbar">
-              <CityCardGrid
-                weatherData={weatherData}
-                selectedCity={selectedCity}
-                onCityClick={setSelectedCity}
-              />
-            </div>
-          </div>
+      <main className="relative h-screen w-full">
+        <div className="absolute inset-0">
+          <WeatherMap
+            weatherData={weatherData}
+            originCity={tripPlan?.origin}
+            selectedCity={selectedCity}
+            onSelectCity={setSelectedCity}
+            className="h-full w-full"
+          />
         </div>
+
+        <StageWorkspace
+          items={panelButtons}
+          panels={desktopPanels}
+          panelStates={panelStates}
+          openPanelKeys={openPanels}
+          minimizedPanelKeys={minimizedPanels}
+          focusedPanel={focusedPanel}
+          activeMobilePanel={activeMobilePanel}
+          onTogglePanel={togglePanel}
+          onFocusPanel={setFocusedPanel}
+          onSetPanelState={setPanelState}
+          onSetActiveMobilePanel={setActiveMobilePanel}
+          mobileContent={
+            <>
+              {activeMobilePanel === 'chat' && (
+                <ChatContainer
+                  onWeatherUpdate={setWeatherData}
+                  onPlanUpdate={setTripPlan}
+                  queuedPrompt={queuedPrompt}
+                  onQueuedPromptHandled={() => setQueuedPrompt(null)}
+                />
+              )}
+
+              {activeMobilePanel === 'decision' && (
+                <DecisionPanel
+                  tripPlan={tripPlan}
+                  selectedCity={selectedCity}
+                  weatherData={weatherData}
+                  onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
+                />
+              )}
+
+              {activeMobilePanel === 'cards' && (
+                <CityCardGrid
+                  weatherData={weatherData}
+                  selectedCity={selectedCity}
+                  onCityClick={setSelectedCity}
+                />
+              )}
+            </>
+          }
+        />
       </main>
 
       <SettingsModal

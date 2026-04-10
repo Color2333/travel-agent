@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { getCityByName } from '@/lib/cities/utils';
 import { WEATHER_CONDITION_MAP, type City, type WeatherData } from '@/types';
+import { stage } from '@/lib/ui/stage';
 import CityCard from './CityCard';
 
 // At runtime, WeatherData from planTrip includes transport fields merged in.
@@ -33,29 +34,29 @@ export default function CityCardGrid({ weatherData, selectedCity, onCityClick }:
 
   if (sortedWeatherData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 sm:h-56 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/40">
-        <MapPin className="w-12 h-12 text-gray-300 mb-3" />
-        <p className="text-gray-500 text-sm sm:text-base">开始对话查询天气吧</p>
-        <p className="text-gray-400 text-xs mt-1">输入出发地和时间获取推荐</p>
+      <div className={stage.emptyState('text-white', 'md')}>
+        <MapPin className="mb-3 h-12 w-12 text-white/48" />
+        <p className="text-sm text-white sm:text-base">开始对话查询天气吧</p>
+        <p className="mt-1 text-xs text-white/64">输入出发地和时间获取推荐</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 px-1">
+      <div className="mb-4 flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-md shadow-primary-200">
+          <div className={stage.subpanel('flex h-8 w-8 items-center justify-center rounded-xl shadow-[0_10px_24px_rgba(255,255,255,0.1)]', 'soft')}>
             <MapPin className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">推荐目的地</h3>
-            <p className="text-xs text-gray-500">找到 {sortedWeatherData.length} 个城市</p>
+            <h3 className="font-semibold text-white">推荐目的地</h3>
+            <p className="text-xs text-white/60">找到 {sortedWeatherData.length} 个城市</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
         {sortedWeatherData.map((data, index) => {
           // Prefer dynamic coords from planTrip/QWeather; fall back to local DB only when needed.
           const dbCity = getCityByName(data.city);

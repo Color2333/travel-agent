@@ -2,6 +2,7 @@
 
 import { Train, Car, Droplets, Wind, MapPin } from 'lucide-react';
 import { WEATHER_CONDITION_MAP, type City, type WeatherData } from '@/types';
+import { cityCard } from '@/lib/ui/city-card';
 
 interface CityCardProps {
   city: City;
@@ -83,31 +84,19 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
       type="button"
       onClick={onClick}
       onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
-      className={`
-        group relative w-full overflow-hidden rounded-2xl border bg-white text-left
-        transition-all duration-300 ease-out
-        ${isActive
-          ? 'border-sky-300 ring-2 ring-sky-400 ring-offset-2 ring-offset-sky-50/80 shadow-[0_18px_40px_rgba(14,165,233,0.22)]'
-          : isHighlighted
-            ? 'border-primary-200 ring-2 ring-primary-400 ring-offset-2 ring-offset-blue-50/50 shadow-md shadow-primary-100'
-            : 'border-gray-200/80 hover:border-gray-300'
-        }
-        ${onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/60' : ''}
-      `}
+      className={cityCard.shell({ isActive, isHighlighted, clickable: Boolean(onClick) })}
     >
       {isActive && (
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-300 via-cyan-300 to-blue-400" />
       )}
 
-      {/* Top gradient accent for highlighted cards */}
       {isHighlighted && !isActive && (
-        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary-400 to-primary-500" />
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-white/80 to-sky-200/90" />
       )}
 
-      {/* Rank badge */}
       {isHighlighted && rank && rank <= 3 && (
         <div className="absolute top-3 right-3 z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-semibold shadow-sm">
+          <div className={cityCard.badge(isActive ? 'active' : 'default')}>
             <span>{rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</span>
             <span>No.{rank}</span>
           </div>
@@ -115,14 +104,13 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
       )}
 
       <div className="p-4">
-        {/* City name + weather icon */}
-        <div className="flex items-start gap-2.5 mb-3">
+        <div className="mb-3 flex items-start gap-2.5">
           <span className="text-2xl leading-none mt-0.5">{weatherIcon}</span>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h3 className="font-bold text-base text-gray-900 leading-tight truncate">{city.name}</h3>
               {city.province && (
-                <span className="hidden sm:inline-block text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full truncate max-w-[5rem]">
+                <span className="hidden max-w-[5rem] truncate rounded-full bg-white/76 px-1.5 py-0.5 text-[10px] text-gray-500 shadow-sm sm:inline-block">
                   {city.province.replace('省', '').replace('自治区', '').replace('壮族', '')}
                 </span>
               )}
@@ -133,8 +121,7 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
           </div>
         </div>
 
-        {/* Temperature */}
-        <div className="flex items-baseline gap-1 mb-3">
+        <div className="mb-3 flex items-baseline gap-1">
           {weather ? (
             <>
               <span className="tabular-nums text-2xl font-bold text-gray-900">{weather.tempHigh}°</span>
@@ -147,21 +134,20 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
           )}
         </div>
 
-        {/* Weather stats */}
         {weather && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-xs">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-full bg-sky-50/90 px-2.5 py-1 text-xs text-sky-700">
               <Droplets className="w-3 h-3 text-blue-400" />
               <span className="tabular-nums font-medium text-blue-700">{weather.rainProbability}%</span>
             </div>
             {weather.windSpeed > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-50 text-xs">
+              <div className="flex items-center gap-1 rounded-full bg-white/72 px-2.5 py-1 text-xs shadow-sm">
                 <Wind className="w-3 h-3 text-gray-400" />
                 <span className="tabular-nums font-medium text-gray-600">{weather.windSpeed}级</span>
               </div>
             )}
             {city.distance && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-50 text-xs ml-auto">
+              <div className="ml-auto flex items-center gap-1 rounded-full bg-white/72 px-2.5 py-1 text-xs shadow-sm">
                 <MapPin className="w-3 h-3 text-gray-400" />
                 <span className="tabular-nums font-medium text-gray-600">{city.distance}km</span>
               </div>
@@ -169,12 +155,10 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
           </div>
         )}
 
-        {/* Score bar */}
         {weather && <ScoreBar score={weather.score} />}
 
-        {/* Transport section */}
         {hasTransport && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-3 border-t border-white/55 pt-3">
             <div className="grid grid-cols-2 gap-2">
               {city.trainTime && (
                 <TransportRow
@@ -196,12 +180,11 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
               )}
             </div>
 
-            {/* Distance bar */}
             {city.distance && (
               <div className="mt-2.5 flex items-center gap-2">
-                <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/70">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-300 to-blue-400 rounded-full"
+                    className="h-full rounded-full bg-gradient-to-r from-sky-300 to-blue-400"
                     style={{ width: `${Math.min(100, (city.distance / 1000) * 100)}%` }}
                   />
                 </div>

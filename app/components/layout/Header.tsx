@@ -1,6 +1,7 @@
 'use client';
 
 import { CloudSun, Settings } from 'lucide-react';
+import { stage } from '@/lib/ui/stage';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -8,15 +9,15 @@ interface HeaderProps {
 
 export function Header({ onSettingsClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 glass border-b border-white/30 shadow-sm backdrop-blur-xl bg-white/60">
-      <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 lg:px-6">
+      <div className="mx-auto max-w-[1600px]">
+        <div className={stage.panelDock('flex h-16 items-center justify-between rounded-[28px] px-4 shadow-[0_18px_50px_rgba(15,23,42,0.16)] sm:px-5')}>
           <div className="flex items-center gap-2.5">
             <div className="relative">
-              <CloudSun className="w-8 h-8 text-primary-600" strokeWidth={1.5} />
-              <div className="absolute inset-0 bg-primary-400/20 blur-xl rounded-full" />
+              <CloudSun className="w-8 h-8 text-white" strokeWidth={1.5} />
+              <div className="absolute inset-0 rounded-full bg-sky-300/30 blur-xl" />
             </div>
-            <span className="font-bold text-xl text-primary-700 tracking-tight hidden sm:inline">
+            <span className="hidden text-xl font-semibold tracking-tight text-white sm:inline">
               TravelAgent
             </span>
           </div>
@@ -24,11 +25,11 @@ export function Header({ onSettingsClick }: HeaderProps) {
           <button
             type="button"
             onClick={onSettingsClick}
-            className="group relative p-2.5 rounded-xl hover:bg-white/50 transition-all duration-200 active:scale-95"
+            className={stage.actionCard('group relative rounded-2xl p-2.5 active:scale-95', true)}
             aria-label="Settings"
           >
-            <Settings className="w-5 h-5 text-gray-600 group-hover:text-primary-600 transition-colors" />
-            <div className="absolute inset-0 bg-primary-100/0 group-hover:bg-primary-100/50 rounded-xl transition-colors" />
+            <Settings className="w-5 h-5 text-white/82 transition-colors group-hover:text-white" />
+            <div className="absolute inset-0 rounded-2xl bg-white/0 transition-colors group-hover:bg-white/8" />
           </button>
         </div>
       </div>

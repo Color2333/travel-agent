@@ -38,7 +38,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
   const isDisabled = !input.trim() || isLoading;
 
   return (
-    <form onSubmit={onSubmit} className="border-t border-gray-200/60 bg-white/50 backdrop-blur-sm p-3 sm:p-4">
+    <form onSubmit={onSubmit} className="border-t border-white/10 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
       <div className="relative flex items-end gap-2 sm:gap-3">
         <div className="flex-1 relative">
           <textarea
@@ -49,7 +49,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
             placeholder="输入消息..."
             disabled={isLoading}
             rows={1}
-            className="w-full min-h-[44px] max-h-[120px] rounded-full border border-gray-300/80 bg-white/90 px-4 py-2.5 pr-12 text-sm sm:text-[15px] placeholder:text-gray-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all duration-200 shadow-sm"
+            className="w-full min-h-[48px] max-h-[120px] rounded-[24px] border border-white/16 bg-white/10 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/38 focus:border-white/28 focus:outline-none focus:ring-2 focus:ring-white/12 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:text-[15px]"
             style={{ lineHeight: '1.5' }}
           />
         </div>
@@ -60,8 +60,8 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
           disabled={isDisabled}
           className={`flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
             isDisabled
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md shadow-primary-200 hover:shadow-lg hover:shadow-primary-300 hover:scale-105 active:scale-95'
+              ? 'bg-white/8 text-white/32 cursor-not-allowed'
+              : 'bg-[linear-gradient(135deg,rgba(125,211,252,0.86),rgba(59,130,246,0.96))] text-white shadow-[0_16px_34px_rgba(59,130,246,0.32)] hover:scale-[1.03] active:scale-95'
           }`}
         >
           <Send className="w-4 h-4 sm:w-5 sm:h-5" />
