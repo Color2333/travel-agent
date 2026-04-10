@@ -49,7 +49,7 @@ export function StageWorkspace({
 
   return (
     <>
-      <div className="pointer-events-none absolute inset-x-0 top-[5.5rem] z-40 flex justify-center px-3 sm:px-4">
+      <div className="pointer-events-none absolute inset-x-0 top-[5.4rem] z-40 flex justify-center px-3 sm:px-4">
         <StageToolbar
           items={items.map((item) => ({
             key: item.key,

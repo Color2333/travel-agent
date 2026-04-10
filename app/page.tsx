@@ -5,7 +5,6 @@ import { LayoutPanelTop, Map, MessageSquareText } from 'lucide-react';
 import { StageAmbient } from './components/layout/StageAmbient';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/layout/SettingsModal';
-import { StageStatusBar } from './components/layout/StageStatusBar';
 import { StageWorkspace } from './components/layout/StageWorkspace';
 import ChatContainer from './components/chat/ChatContainer';
 import WeatherMap from './components/map/WeatherMap';
@@ -65,7 +64,7 @@ export default function Home() {
       key: 'chat',
       title: '对话台',
       subtitle: '自然语言控制地图与策略',
-      positionClass: 'left-6 top-24 bottom-6 w-[390px]',
+      positionClass: 'left-6 top-[8.8rem] bottom-6 w-[360px] xl:w-[380px]',
       bodyClass: 'h-[calc(100%-4.5rem)]',
       content: (
         <ChatContainer
@@ -80,8 +79,8 @@ export default function Home() {
       key: 'decision',
       title: '决策台',
       subtitle: '总结、比较与继续追问',
-      positionClass: 'right-6 top-24 w-[430px] max-h-[40vh]',
-      bodyClass: 'max-h-[calc(40vh-4.5rem)] overflow-y-auto custom-scrollbar',
+      positionClass: 'right-6 top-[8.8rem] w-[340px] xl:w-[360px] max-h-[34vh]',
+      bodyClass: 'max-h-[calc(34vh-4.5rem)] overflow-y-auto custom-scrollbar',
       content: (
         <DecisionPanel
           tripPlan={tripPlan}
@@ -95,8 +94,8 @@ export default function Home() {
       key: 'cards',
       title: '城市台',
       subtitle: '快速筛选候选目的地',
-      positionClass: 'right-6 bottom-6 w-[540px] max-h-[42vh]',
-      bodyClass: 'max-h-[calc(42vh-4.5rem)] overflow-y-auto custom-scrollbar',
+      positionClass: 'right-6 bottom-6 w-[340px] xl:w-[420px] max-h-[44vh]',
+      bodyClass: 'max-h-[calc(44vh-4.5rem)] overflow-y-auto custom-scrollbar',
       content: (
         <CityCardGrid
           weatherData={weatherData}
@@ -123,14 +122,6 @@ export default function Home() {
             className="h-full w-full"
           />
         </div>
-
-        <StageStatusBar
-          focusedPanel={focusedPanel}
-          openCount={openPanels.length}
-          selectedCity={selectedCity}
-          originCity={tripPlan?.origin ?? null}
-          date={tripPlan?.date ?? null}
-        />
 
         <StageWorkspace
           items={panelButtons}

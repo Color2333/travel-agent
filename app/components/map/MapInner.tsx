@@ -234,22 +234,22 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
         </Pane>
       </MapContainer>
 
-      <div className="pointer-events-none absolute inset-0 z-[420] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.5),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(191,219,254,0.18)_38%,rgba(15,23,42,0.22)_100%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[421] h-[42%] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.62),rgba(255,255,255,0.24)_34%,transparent_66%)]" />
+      <div className="pointer-events-none absolute inset-0 z-[420] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(191,219,254,0.08)_32%,rgba(15,23,42,0.12)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[421] h-[34%] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.48),rgba(255,255,255,0.16)_30%,transparent_64%)]" />
 
       <div className="pointer-events-none absolute inset-x-4 top-4 z-[500] flex items-start justify-between gap-3 sm:inset-x-6">
-        <div className={stage.subpanel('rounded-[28px] px-4 py-3 text-slate-900 shadow-[0_16px_50px_rgba(255,255,255,0.22)] sm:px-5')}>
+        <div className={stage.subpanel('max-w-[22rem] rounded-[28px] px-4 py-3 text-slate-900 shadow-[0_16px_50px_rgba(255,255,255,0.18)] sm:px-5')}>
           <div className={stage.pill('inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700/90')}>
             <Sparkles className="h-3.5 w-3.5" />
             {hasResults ? 'Travel Weather' : 'Weather Stage'}
           </div>
-          <h3 className="mt-3 text-[clamp(1.3rem,2vw,1.85rem)] font-semibold tracking-tight text-white drop-shadow-[0_8px_20px_rgba(15,23,42,0.22)]">
-            {hasResults ? `${displayOrigin} 出发天气地图` : '查询前就该有地图'}
+          <h3 className="mt-3 text-[clamp(1.2rem,2vw,1.6rem)] font-semibold tracking-tight text-white drop-shadow-[0_8px_20px_rgba(15,23,42,0.22)]">
+            {hasResults ? `${displayOrigin} 出发天气地图` : '地图先行，查询随后'}
           </h3>
-          <p className="mt-1 max-w-[36rem] text-sm leading-6 text-slate-800/78">
+          <p className="mt-1 text-sm leading-6 text-slate-800/72">
             {hasResults
-              ? '真实城市坐标、天气节点和路线层已经叠在同一张地图上。'
-              : '先感受地图氛围、城市层级和路线走向，再让 AI 给你结果。'}
+              ? '点击节点切换候选城市，工作台会同步更新。'
+              : '先看周边城市分布，再让 AI 帮你做天气决策。'}
           </p>
         </div>
 
@@ -260,7 +260,7 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
         </div>
       </div>
 
-      <div className="pointer-events-none absolute left-4 top-28 z-[500] flex flex-wrap gap-2 sm:left-6">
+      <div className="pointer-events-none absolute bottom-5 left-4 z-[500] flex flex-wrap gap-2 sm:left-6">
         <div className={stage.pill('pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-white')}>
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
           稳定晴好
@@ -275,9 +275,9 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-3 bottom-3 z-[500] sm:inset-x-4 sm:bottom-4">
-        <div className="grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className={stage.subpanel('pointer-events-auto rounded-[30px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.18)] sm:p-5')}>
+      <div className="pointer-events-none absolute bottom-5 right-4 z-[500] w-[min(32rem,calc(100%-2rem))] sm:right-6 sm:w-[24rem]">
+        <div className="space-y-3">
+          <div className={stage.subpanel('pointer-events-auto rounded-[28px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.18)] sm:p-5')}>
             {active && (
               <>
                 <div className="flex items-start justify-between gap-3">
@@ -288,7 +288,7 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
                     <div className="mt-2 flex items-center gap-3">
                       <span className="text-4xl">{WEATHER_CONDITION_MAP[active.weather]?.icon ?? '☀️'}</span>
                       <div>
-                        <h4 className="text-3xl font-semibold tracking-tight text-white">{active.city}</h4>
+                        <h4 className="text-2xl font-semibold tracking-tight text-white">{active.city}</h4>
                         <p className="mt-1 text-sm text-slate-100/74">
                           {hasResults ? getTravelNarrative(active.distance, active.trainTime, active.driveTime) : 'Apple Weather 风格预览态'}
                         </p>
@@ -301,7 +301,7 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-3 gap-2.5">
                   <div className={stage.subpanel('rounded-2xl px-3 py-3 text-white', 'soft')}>
                     <div className="text-[11px] uppercase tracking-[0.2em] text-white/60">Temp</div>
                     <div className="mt-2 text-lg font-semibold">{active.tempHigh}° / {active.tempLow}°</div>
@@ -325,14 +325,14 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
             )}
           </div>
 
-          <div className={stage.subpanel('pointer-events-auto rounded-[30px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.16)] sm:p-5')}>
+          <div className={stage.subpanel('pointer-events-auto rounded-[28px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.16)] sm:p-5')}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.22em] text-white/70">
                   {hasResults ? 'Top Picks' : 'Try Asking'}
                 </div>
-                <div className="mt-1 text-lg font-semibold text-white">
-                  {hasResults ? '从地图直接切换候选城市' : `预览中心：${displayOrigin}`}
+                <div className="mt-1 text-base font-semibold text-white">
+                  {hasResults ? '从地图快速切换候选城市' : `预览中心：${displayOrigin}`}
                 </div>
               </div>
               <Compass className="h-5 w-5 text-white/72" />
