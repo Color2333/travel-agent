@@ -7,7 +7,7 @@ import type { StagePanelKey } from '@/lib/ui/use-stage-panels';
 export interface DesktopStagePanel {
   key: StagePanelKey;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   positionClass: string;
   bodyClass: string;
   content: ReactNode;
@@ -40,7 +40,6 @@ export function StageDesktopPanels({
             focused={focusedPanel === panel.key}
             onMinimize={() => onMinimize(panel.key)}
             title={panel.title}
-            subtitle={panel.subtitle}
           >
             {panel.content}
           </StagePanel>

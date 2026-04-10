@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { LayoutPanelTop, Map, MessageSquareText } from 'lucide-react';
+import { Map, MessageSquareText } from 'lucide-react';
 import { StageAmbient } from './components/layout/StageAmbient';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/layout/SettingsModal';
@@ -41,31 +41,43 @@ export default function Home() {
       if (current && weatherData.some((item) => item.city === current)) {
         return current;
       }
-
       return [...weatherData].sort((a, b) => b.score - a.score)[0]?.city ?? null;
     });
   }, [weatherData]);
 
+  // Only show 2 panels in toolbar — 'decision' key exists in useStagePanels but is hidden from UI
   const panelButtons: Array<{ key: StagePanelKey; label: string; icon: typeof MessageSquareText; short: string }> = [
     { key: 'chat', label: '对话', icon: MessageSquareText, short: 'Chat' },
-    { key: 'decision', label: '决策', icon: LayoutPanelTop, short: 'Decision' },
     { key: 'cards', label: '城市', icon: Map, short: 'Cities' },
   ];
+
+  const rightPanelContent: ReactNode = (
+    <>
+      <DecisionPanel
+        tripPlan={tripPlan}
+        selectedCity={selectedCity}
+        weatherData={weatherData}
+      />
+      <CityCardGrid
+        weatherData={weatherData}
+        selectedCity={selectedCity}
+        onCityClick={setSelectedCity}
+      />
+    </>
+  );
 
   const desktopPanels: Array<{
     key: StagePanelKey;
     title: string;
-    subtitle: string;
     positionClass: string;
     bodyClass: string;
     content: ReactNode;
   }> = [
     {
       key: 'chat',
-      title: '对话台',
-      subtitle: '自然语言控制地图与策略',
-      positionClass: 'left-6 top-[8.8rem] bottom-6 w-[360px] xl:w-[380px]',
-      bodyClass: 'h-[calc(100%-4.5rem)]',
+      title: '对话',
+      positionClass: 'left-6 top-[8.8rem] bottom-6 w-[340px] xl:w-[360px]',
+      bodyClass: 'h-[calc(100%-2.75rem)]',
       content: (
         <ChatContainer
           onWeatherUpdate={setWeatherData}
@@ -76,44 +88,22 @@ export default function Home() {
       ),
     },
     {
-      key: 'decision',
-      title: '决策台',
-      subtitle: '总结、比较与继续追问',
-      positionClass: 'right-6 top-[8.8rem] w-[340px] xl:w-[360px] max-h-[34vh]',
-      bodyClass: 'max-h-[calc(34vh-4.5rem)] overflow-y-auto custom-scrollbar',
-      content: (
-        <DecisionPanel
-          tripPlan={tripPlan}
-          selectedCity={selectedCity}
-          weatherData={weatherData}
-          onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
-        />
-      ),
-    },
-    {
       key: 'cards',
-      title: '城市台',
-      subtitle: '快速筛选候选目的地',
-      positionClass: 'right-6 bottom-6 w-[340px] xl:w-[420px] max-h-[44vh]',
-      bodyClass: 'max-h-[calc(44vh-4.5rem)] overflow-y-auto custom-scrollbar',
-      content: (
-        <CityCardGrid
-          weatherData={weatherData}
-          selectedCity={selectedCity}
-          onCityClick={setSelectedCity}
-        />
-      ),
+      title: '城市',
+      positionClass: 'right-6 top-[8.8rem] bottom-6 w-[360px] xl:w-[380px]',
+      bodyClass: 'h-[calc(100%-2.75rem)] overflow-y-auto custom-scrollbar',
+      content: rightPanelContent,
     },
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#dbeafe_0%,#e0f2fe_30%,#f8fafc_100%)]">
+    <div className="relative min-h-screen overflow-hidden [background:var(--page-bg)]">
       <StageAmbient />
 
       <Header onSettingsClick={() => setIsSettingsOpen(true)} />
 
-      <main className="relative h-screen w-full">
-        <div className="absolute inset-0">
+      <main className="relative isolate h-screen w-full">
+        <div className="absolute inset-0 z-0">
           <WeatherMap
             weatherData={weatherData}
             originCity={tripPlan?.origin}
@@ -146,22 +136,7 @@ export default function Home() {
                 />
               )}
 
-              {activeMobilePanel === 'decision' && (
-                <DecisionPanel
-                  tripPlan={tripPlan}
-                  selectedCity={selectedCity}
-                  weatherData={weatherData}
-                  onAskFollowUp={(text) => setQueuedPrompt({ id: Date.now(), text })}
-                />
-              )}
-
-              {activeMobilePanel === 'cards' && (
-                <CityCardGrid
-                  weatherData={weatherData}
-                  selectedCity={selectedCity}
-                  onCityClick={setSelectedCity}
-                />
-              )}
+              {(activeMobilePanel === 'cards' || activeMobilePanel === 'decision') && rightPanelContent}
             </>
           }
         />

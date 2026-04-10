@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Marker, Pane, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet';
-import { Compass, Sparkles, Wind, CloudRain, MapPin } from 'lucide-react';
+import { Wind, CloudRain, Droplets } from 'lucide-react';
 import type { DivIcon, LatLngExpression, LatLngTuple } from 'leaflet';
 import { divIcon, latLngBounds } from 'leaflet';
 import { WEATHER_CONDITION_MAP, type WeatherData } from '@/types';
@@ -139,21 +139,8 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
 
   const active = visiblePoints.find((item) => item.city === activeCity) ?? visiblePoints[0] ?? null;
   const otherPoints = active ? visiblePoints.filter((item) => item.city !== active.city) : [];
-  const topThree = visiblePoints.slice(0, 3);
   const center: LatLngExpression = active ? [active.lat, active.lng] : [DEFAULT_POSITION.lat, DEFAULT_POSITION.lng];
   const displayOrigin = originCity ?? '上海';
-  const sideActions = hasResults
-    ? topThree.map((point) => ({
-        label: point.city,
-        meta: `${point.score}分 · ${point.tempHigh}° / ${point.tempLow}°`,
-        actionable: true,
-        onClick: () => handleSelect(point.city),
-      }))
-    : [
-        { label: '这周六上海出发', meta: '直接进入真实天气结果', actionable: false, onClick: undefined },
-        { label: '明天周边哪里不下雨', meta: '偏保守决策问法', actionable: false, onClick: undefined },
-        { label: '下周日适合去哪玩', meta: '偏探索型问法', actionable: false, onClick: undefined },
-      ];
 
   const handleSelect = (cityName: string) => {
     setActiveCity(cityName);
@@ -161,7 +148,7 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
   };
 
   return (
-    <div className={`relative overflow-hidden rounded-[32px] border border-white/55 bg-[#dfeaf4] shadow-[0_30px_80px_rgba(148,163,184,0.24)] ${className || ''}`}>
+    <div className={`relative overflow-hidden bg-[#dfeaf4] dark:bg-slate-900 ${className || ''}`}>
       <MapContainer
         center={center}
         zoom={DEFAULT_ZOOM}
@@ -222,7 +209,7 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
               icon={buildCityIcon(point, active?.city === point.city)}
               eventHandlers={{ click: () => handleSelect(point.city) }}
             >
-              <Tooltip direction="top" offset={[0, -12]} opacity={1} permanent={active?.city === point.city} className="weather-city-tooltip">
+              <Tooltip direction="top" offset={[0, -12]} opacity={1} className="weather-city-tooltip">
                 <div className="flex items-center gap-2">
                   <span>{WEATHER_CONDITION_MAP[point.weather]?.icon ?? '☀️'}</span>
                   <span>{point.city}</span>
@@ -237,125 +224,83 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
       <div className="pointer-events-none absolute inset-0 z-[420] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(191,219,254,0.08)_32%,rgba(15,23,42,0.12)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[421] h-[34%] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.48),rgba(255,255,255,0.16)_30%,transparent_64%)]" />
 
-      <div className="pointer-events-none absolute inset-x-4 top-4 z-[500] flex items-start justify-between gap-3 sm:inset-x-6">
-        <div className={stage.subpanel('max-w-[22rem] rounded-[28px] px-4 py-3 text-slate-900 shadow-[0_16px_50px_rgba(255,255,255,0.18)] sm:px-5')}>
-          <div className={stage.pill('inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700/90')}>
-            <Sparkles className="h-3.5 w-3.5" />
-            {hasResults ? 'Travel Weather' : 'Weather Stage'}
-          </div>
-          <h3 className="mt-3 text-[clamp(1.2rem,2vw,1.6rem)] font-semibold tracking-tight text-white drop-shadow-[0_8px_20px_rgba(15,23,42,0.22)]">
-            {hasResults ? `${displayOrigin} 出发天气地图` : '地图先行，查询随后'}
-          </h3>
-          <p className="mt-1 text-sm leading-6 text-slate-800/72">
-            {hasResults
-              ? '点击节点切换候选城市，工作台会同步更新。'
-              : '先看周边城市分布，再让 AI 帮你做天气决策。'}
-          </p>
-        </div>
-
-        <div className="pointer-events-auto hidden gap-2 sm:flex">
-          <span className={stage.pill('rounded-full px-4 py-2 text-sm text-white shadow-[0_10px_30px_rgba(255,255,255,0.16)]')}>
-            {visiblePoints.length} 个城市节点
-          </span>
-        </div>
-      </div>
-
       <div className="pointer-events-none absolute bottom-5 left-4 z-[500] flex flex-wrap gap-2 sm:left-6">
-        <div className={stage.pill('pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-white')}>
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-          稳定晴好
-        </div>
-        <div className={stage.pill('pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-white')}>
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-          可考虑
-        </div>
-        <div className={stage.pill('pointer-events-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-white')}>
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
-          谨慎
-        </div>
+        {[
+          { color: 'bg-emerald-400', label: '晴好' },
+          { color: 'bg-amber-400', label: '可考虑' },
+          { color: 'bg-rose-400', label: '谨慎' },
+        ].map(({ color, label }) => (
+          <div key={label} className={`pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] panel-t2 ${stage.pill()}`}>
+            <span className={`h-2 w-2 rounded-full ${color}`} />
+            {label}
+          </div>
+        ))}
       </div>
 
-      <div className="pointer-events-none absolute bottom-5 right-4 z-[500] w-[min(32rem,calc(100%-2rem))] sm:right-6 sm:w-[24rem]">
-        <div className="space-y-3">
-          <div className={stage.subpanel('pointer-events-auto rounded-[28px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.18)] sm:p-5')}>
-            {active && (
-              <>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.24em] text-white/74">
-                      {hasResults ? 'Focus City' : 'Preview Focus'}
-                    </div>
-                    <div className="mt-2 flex items-center gap-3">
-                      <span className="text-4xl">{WEATHER_CONDITION_MAP[active.weather]?.icon ?? '☀️'}</span>
-                      <div>
-                        <h4 className="text-2xl font-semibold tracking-tight text-white">{active.city}</h4>
-                        <p className="mt-1 text-sm text-slate-100/74">
-                          {hasResults ? getTravelNarrative(active.distance, active.trainTime, active.driveTime) : 'Apple Weather 风格预览态'}
-                        </p>
-                      </div>
-                    </div>
+      {/* ── Preview Focus / Focus City ── matches workspace glass theme ── */}
+      <div className="pointer-events-none absolute bottom-5 right-4 z-[500] w-[min(28rem,calc(100%-2rem))] sm:right-6 sm:w-[22rem]">
+        {active && (
+          <div className={stage.subpanel('pointer-events-auto rounded-[28px] p-4 shadow-[0_18px_50px_rgba(15,23,42,0.14)] sm:p-5')}>
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-4xl flex-shrink-0">{WEATHER_CONDITION_MAP[active.weather]?.icon ?? '☀️'}</span>
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-[0.20em] panel-t4">
+                    {hasResults ? 'Focus City' : 'Preview Focus'}
                   </div>
-                  <div className={stage.pill('rounded-full px-3 py-2 text-center text-white')}>
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/64">Score</div>
-                    <div className="mt-1 text-xl font-semibold">{active.score}</div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  <div className={stage.subpanel('rounded-2xl px-3 py-3 text-white', 'soft')}>
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-white/60">Temp</div>
-                    <div className="mt-2 text-lg font-semibold">{active.tempHigh}° / {active.tempLow}°</div>
-                  </div>
-                  <div className={stage.subpanel('rounded-2xl px-3 py-3 text-white', 'soft')}>
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-white/60">
-                      <CloudRain className="h-3.5 w-3.5" />
-                      Rain
-                    </div>
-                    <div className="mt-2 text-lg font-semibold">{active.rainProbability}%</div>
-                  </div>
-                  <div className={stage.subpanel('rounded-2xl px-3 py-3 text-white', 'soft')}>
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-white/60">
-                      <Wind className="h-3.5 w-3.5" />
-                      Travel
-                    </div>
-                    <div className="mt-2 text-sm font-semibold">{active.trainTime ?? active.driveTime ?? '待估算'}</div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className={stage.subpanel('pointer-events-auto rounded-[28px] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.16)] sm:p-5')}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.22em] text-white/70">
-                  {hasResults ? 'Top Picks' : 'Try Asking'}
-                </div>
-                <div className="mt-1 text-base font-semibold text-white">
-                  {hasResults ? '从地图快速切换候选城市' : `预览中心：${displayOrigin}`}
+                  <h4 className="text-xl font-semibold tracking-tight panel-t1 leading-tight mt-0.5">{active.city}</h4>
+                  <p className="text-xs panel-t3 mt-0.5 truncate">
+                    {hasResults
+                      ? getTravelNarrative(active.distance, active.trainTime, active.driveTime)
+                      : (active.weatherText ?? '预览模式')}
+                  </p>
                 </div>
               </div>
-              <Compass className="h-5 w-5 text-white/72" />
+
+              <div className={`flex-shrink-0 rounded-2xl px-3 py-2 text-center ${
+                active.score > 70
+                  ? 'bg-emerald-100 dark:bg-emerald-500/20'
+                  : active.score >= 40
+                  ? 'bg-amber-100 dark:bg-amber-500/20'
+                  : 'bg-red-100 dark:bg-rose-500/20'
+              }`}>
+                <div className="text-[9px] uppercase tracking-[0.18em] panel-t3">Score</div>
+                <div className={`text-2xl font-bold tabular-nums leading-tight ${
+                  active.score > 70 ? 'text-emerald-700 dark:text-emerald-300'
+                  : active.score >= 40 ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-red-600 dark:text-rose-300'
+                }`}>{active.score}</div>
+              </div>
             </div>
 
-            <div className="mt-3 space-y-2">
-              {sideActions.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.onClick}
-                  className={stage.actionCard('flex w-full items-center justify-between px-3 py-3 text-left text-white')}
-                >
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                    <div className="mt-1 text-xs text-white/66">{item.meta}</div>
+            {/* Stats */}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                { label: '温度', value: `${active.tempHigh}°/${active.tempLow}°`, icon: null },
+                { label: '降雨', value: `${active.rainProbability}%`, icon: <CloudRain className="h-3 w-3" /> },
+                { label: '湿度', value: `${active.humidity}%`, icon: <Droplets className="h-3 w-3" /> },
+              ].map(({ label, value, icon }) => (
+                <div key={label} className={stage.subpanel('rounded-2xl px-2.5 py-2.5', 'soft')}>
+                  <div className="flex items-center gap-1 text-[9px] uppercase tracking-[0.16em] panel-t4 mb-1.5">
+                    {icon}{label}
                   </div>
-                  {item.actionable ? <MapPin className="h-4 w-4 text-white/70" /> : <span className="text-white/50">→</span>}
-                </button>
+                  <div className="text-sm font-semibold tabular-nums panel-t1">{value}</div>
+                </div>
               ))}
             </div>
+
+            {/* Travel — real results only */}
+            {hasResults && (active.trainTime ?? active.driveTime) && (
+              <div className="mt-2.5 flex items-center gap-1.5 text-xs panel-t3">
+                <Wind className="h-3.5 w-3.5 flex-shrink-0 text-sky-500 dark:text-sky-300" />
+                {active.trainTime && <span>高铁 <strong className="panel-t1 font-semibold">{active.trainTime}</strong></span>}
+                {active.trainTime && active.driveTime && <span className="panel-t4">·</span>}
+                {active.driveTime && <span>自驾 <strong className="panel-t1 font-semibold">{active.driveTime}</strong></span>}
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

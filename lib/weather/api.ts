@@ -137,6 +137,24 @@ export async function fetchWeatherById(cityId: string, cityName: string, date: s
   return buildWeatherData(day, cityName, date);
 }
 
+export async function fetchWeatherForecast(cityId: string, cityName: string): Promise<WeatherData[]> {
+  const apiKey = getApiKey();
+  const res = await fetch(`${WEATHER_API_BASE}/weather/7d?location=${cityId}&key=${apiKey}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new UpstreamServiceError(`Weather service request failed for ${cityName}`);
+
+  const data = await res.json();
+  if (data.code && data.code !== '200') {
+    throw new UpstreamServiceError(`QWeather API error (code ${data.code}) for: ${cityName}`);
+  }
+  if (!data.daily) throw new UpstreamServiceError(`Weather data not available for: ${cityName}`);
+
+  return (data.daily as Record<string, string>[]).map((day) =>
+    buildWeatherData(day, cityName, day.fxDate)
+  );
+}
+
 export async function fetchWeather(city: string, date: string): Promise<WeatherData> {
   const apiKey = getApiKey();
 

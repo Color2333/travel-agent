@@ -34,16 +34,16 @@ export function StageMobileDock({
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-4 lg:hidden">
       <div className={stage.panelDock(`overflow-hidden rounded-[30px] ${hidden ? 'hidden' : ''}`)}>
-        <div className="relative z-[1] border-b border-white/14 px-3 py-2">
+        <div className="relative z-[1] border-b border-[var(--panel-divider)] px-3 py-2">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium text-white">{activeItem?.label}</div>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-white/54">{activeItem?.short}</div>
+              <div className="text-sm font-medium panel-t1">{activeItem?.label}</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] panel-t3">{activeItem?.short}</div>
             </div>
             <button
               type="button"
               onClick={() => activeItem && onMinimize(activeItem.key)}
-              className={stage.actionCard('rounded-full p-2 text-white/70 hover:text-white')}
+              className={stage.actionCard('rounded-full p-2 panel-t3 hover:panel-t1')}
               aria-label="Hide panel"
             >
               <Minus className="h-4 w-4" />

@@ -34,29 +34,26 @@ export default function CityCardGrid({ weatherData, selectedCity, onCityClick }:
 
   if (sortedWeatherData.length === 0) {
     return (
-      <div className={stage.emptyState('text-white', 'md')}>
-        <MapPin className="mb-3 h-12 w-12 text-white/48" />
-        <p className="text-sm text-white sm:text-base">开始对话查询天气吧</p>
-        <p className="mt-1 text-xs text-white/64">输入出发地和时间获取推荐</p>
+      <div className="px-3.5 py-3 sm:px-4">
+        <div className={stage.emptyState('text-white', 'md')}>
+          <MapPin className="mb-3 h-12 w-12 text-white/48" />
+          <p className="text-sm panel-t1 sm:text-base">开始对话查询天气吧</p>
+          <p className="mt-1 text-xs panel-t3">输入出发地和时间获取推荐</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <div className={stage.subpanel('flex h-8 w-8 items-center justify-center rounded-xl shadow-[0_10px_24px_rgba(255,255,255,0.1)]', 'soft')}>
-            <MapPin className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white">推荐目的地</h3>
-            <p className="text-xs text-white/60">找到 {sortedWeatherData.length} 个城市</p>
-          </div>
+    <div className="px-3.5 py-3 sm:px-4">
+      <div className="mb-3 flex items-center justify-between animate-slide-up">
+        <div>
+          <h3 className="text-[13px] font-semibold panel-t1">推荐目的地</h3>
+          <p className="text-[11px] panel-t3">{sortedWeatherData.length} 个城市 · 按评分排序</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-1.5">
         {sortedWeatherData.map((data, index) => {
           // Prefer dynamic coords from planTrip/QWeather; fall back to local DB only when needed.
           const dbCity = getCityByName(data.city);
@@ -85,6 +82,8 @@ export default function CityCardGrid({ weatherData, selectedCity, onCityClick }:
               ref={(node) => {
                 itemRefs.current[data.city] = node;
               }}
+              className="animate-card-enter"
+              style={{ animationDelay: `${Math.min(index * 65, 390)}ms` }}
             >
               <CityCard
                 city={city}

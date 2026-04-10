@@ -4,19 +4,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens: light mode (default) ─────────────────── */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 239, 246, 255;
-  --background-end-rgb: 255, 255, 255;
+  /* Page background */
+  --page-bg: linear-gradient(180deg, #dbeafe 0%, #e0f2fe 30%, #f8fafc 100%);
+
+  /* Glass panel surface */
+  --glass-start:        rgba(255, 255, 255, 0.84);
+  --glass-end:          rgba(248, 250, 252, 0.78);
+  --glass-border:       rgba(255, 255, 255, 0.72);
+  --glass-shadow:       0 20px 60px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --glass-focus-border: rgba(255, 255, 255, 0.84);
+  --glass-focus-shadow: 0 28px 80px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  /* Sub-surface elements */
+  --subpanel-bg:     rgba(255, 255, 255, 0.58);
+  --subpanel-border: rgba(255, 255, 255, 0.74);
+  --pill-bg:         rgba(255, 255, 255, 0.62);
+  --pill-border:     rgba(255, 255, 255, 0.78);
+
+  /* Dividers & scrollbar */
+  --panel-divider:         rgba(15, 23, 42, 0.08);
+  --scrollbar-thumb:       rgba(15, 23, 42, 0.12);
+  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.22);
+
+  /* Semantic text hierarchy */
+  --pt1: rgba(15, 23, 42, 0.92);  /* primary */
+  --pt2: rgba(15, 23, 42, 0.62);  /* secondary */
+  --pt3: rgba(15, 23, 42, 0.42);  /* muted */
+  --pt4: rgba(15, 23, 42, 0.26);  /* faint */
+}
+
+/* ── Design tokens: dark mode ────────────────────────────── */
+.dark {
+  --page-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+
+  --glass-start:        rgba(15, 23, 42, 0.80);
+  --glass-end:          rgba(15, 23, 42, 0.88);
+  --glass-border:       rgba(255, 255, 255, 0.09);
+  --glass-shadow:       0 32px 90px rgba(0, 0, 0, 0.30), 0 4px 16px rgba(0, 0, 0, 0.16);
+  --glass-focus-border: rgba(255, 255, 255, 0.14);
+  --glass-focus-shadow: 0 40px 110px rgba(0, 0, 0, 0.36), 0 4px 16px rgba(0, 0, 0, 0.20);
+
+  --subpanel-bg:     rgba(255, 255, 255, 0.06);
+  --subpanel-border: rgba(255, 255, 255, 0.08);
+  --pill-bg:         rgba(255, 255, 255, 0.07);
+  --pill-border:     rgba(255, 255, 255, 0.10);
+
+  --panel-divider:         rgba(255, 255, 255, 0.10);
+  --scrollbar-thumb:       rgba(255, 255, 255, 0.16);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.26);
+
+  --pt1: rgba(255, 255, 255, 0.90);
+  --pt2: rgba(255, 255, 255, 0.65);
+  --pt3: rgba(255, 255, 255, 0.44);
+  --pt4: rgba(255, 255, 255, 0.28);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
   min-height: 100vh;
   font-family: 'Inter', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-feature-settings: 'tnum' 1, 'kern' 1;
@@ -24,11 +69,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Glass panel surface ─────────────────────────────────── */
 .floating-stage-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.14));
-  border: 1px solid rgba(255,255,255,0.34);
-  box-shadow: 0 26px 80px rgba(15,23,42,0.18);
-  backdrop-filter: blur(28px) saturate(145%);
+  background: linear-gradient(180deg, var(--glass-start), var(--glass-end));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(32px) saturate(160%);
 }
 
 .floating-stage-panel::before {
@@ -36,13 +82,13 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.02) 32%, rgba(255,255,255,0));
-  opacity: 0.9;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 28%, rgba(255,255,255,0));
+  opacity: 1;
 }
 
 .floating-stage-panel.is-focused {
-  border-color: rgba(255,255,255,0.46);
-  box-shadow: 0 34px 100px rgba(15,23,42,0.24);
+  border-color: var(--glass-focus-border);
+  box-shadow: var(--glass-focus-shadow);
 }
 
 .floating-stage-panel.is-focused::before {
@@ -64,6 +110,7 @@ body {
   }
 }
 
+/* ── Leaflet map ─────────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
@@ -88,6 +135,7 @@ body {
   animation: map-route-dash 14s linear infinite;
 }
 
+/* ── Map city pins ───────────────────────────────────────── */
 .weather-city-tooltip.leaflet-tooltip {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(2, 6, 23, 0.82);
@@ -186,28 +234,44 @@ body {
   color: #fff1f2;
 }
 
+/* ── Sub-surface elements ────────────────────────────────── */
 .city-card-shell {
-  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,250,252,0.84));
-  border: 1px solid rgba(255,255,255,0.5);
-  box-shadow: 0 16px 44px rgba(15,23,42,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(248,250,252,0.94));
+  border: 1px solid rgba(255,255,255,0.55);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.14);
   backdrop-filter: blur(18px);
+}
+
+.dark .city-card-shell {
+  background: linear-gradient(180deg, rgba(30,41,59,0.88), rgba(15,23,42,0.82));
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.32);
+}
+
+/* Map tile: desaturate slightly in dark mode to reduce visual tension */
+.dark .weather-map-canvas .leaflet-tile-pane {
+  filter: saturate(0.55) contrast(0.88) brightness(0.72) hue-rotate(-6deg);
 }
 
 .stage-subpanel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
-  border: 1px solid rgba(255,255,255,0.16);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
-  backdrop-filter: blur(18px);
+  background: var(--subpanel-bg);
+  border: 1px solid var(--subpanel-border);
+  backdrop-filter: blur(12px);
 }
 
 .stage-pill {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-  backdrop-filter: blur(18px);
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  backdrop-filter: blur(12px);
 }
 
 @layer utilities {
+  /* Semantic panel text – adapts to light/dark automatically */
+  .panel-t1 { color: var(--pt1); }
+  .panel-t2 { color: var(--pt2); }
+  .panel-t3 { color: var(--pt3); }
+  .panel-t4 { color: var(--pt4); }
+
   .glass {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
@@ -257,6 +321,7 @@ body {
   }
 }
 
+/* ── Scrollbar ───────────────────────────────────────────── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -266,21 +331,22 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.2);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.35);
+  background: var(--scrollbar-thumb-hover);
 }
 
 @supports (scrollbar-width: thin) {
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(59, 130, 246, 0.2) transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 }
 
+/* ── Text animations ─────────────────────────────────────── */
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
@@ -292,6 +358,7 @@ body {
   margin-left: 1px;
 }
 
+/* ── Motion animations ───────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -338,4 +405,76 @@ body {
 
 .animate-map-ping {
   animation: map-ping 1.9s ease-out infinite;
+}
+
+/* ── Chat message entrance ───────────────────────────────── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── City card staggered entrance ───────────────────────── */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-card-enter {
+  animation: card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Ambient background animations ──────────────────────── */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: scale(1.08);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 5s ease-in-out infinite;
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 4s ease-in-out infinite;
+}
+
+/* ── Score bar fill animation ────────────────────────────── */
+@keyframes score-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.animate-score-fill {
+  animation: score-fill 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
 }

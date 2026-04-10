@@ -24,8 +24,8 @@ const subpanel = cva('stage-subpanel', {
   variants: {
     tone: {
       default: '',
-      strong: 'bg-white/14',
-      soft: 'bg-white/10',
+      strong: 'bg-slate-900/[0.06] dark:bg-white/14',
+      soft: 'bg-slate-900/[0.03] dark:bg-white/10',
     },
   },
   defaultVariants: {
@@ -37,8 +37,8 @@ const pill = cva('stage-pill', {
   variants: {
     emphasis: {
       default: '',
-      strong: 'bg-white/16 text-white',
-      muted: 'text-white/68',
+      strong: 'bg-slate-900/[0.08] panel-t1 dark:bg-white/16 dark:text-white',
+      muted: 'panel-t3 dark:text-white/68',
     },
   },
   defaultVariants: {
@@ -46,17 +46,20 @@ const pill = cva('stage-pill', {
   },
 });
 
-const actionCard = cva('rounded-2xl border border-white/12 bg-white/8 transition-colors hover:bg-white/14', {
-  variants: {
-    interactive: {
-      true: 'hover:border-white/18',
-      false: '',
+const actionCard = cva(
+  'rounded-2xl border border-slate-900/[0.10] bg-slate-900/[0.04] transition-colors hover:bg-slate-900/[0.08] dark:border-white/12 dark:bg-white/8 dark:hover:bg-white/14',
+  {
+    variants: {
+      interactive: {
+        true: 'hover:border-slate-900/[0.16] dark:hover:border-white/18',
+        false: '',
+      },
     },
-  },
-  defaultVariants: {
-    interactive: true,
-  },
-});
+    defaultVariants: {
+      interactive: true,
+    },
+  }
+);
 
 const controlBar = cva('floating-stage-panel stage-panel-enter pointer-events-auto overflow-hidden rounded-full', {
   variants: {
@@ -86,8 +89,8 @@ const emptyState = cva('stage-subpanel flex flex-col items-center justify-center
 const toggleButton = cva('inline-flex items-center gap-2 rounded-full text-sm transition-colors', {
   variants: {
     active: {
-      true: 'bg-white/22 text-white',
-      false: 'text-white/70 hover:bg-white/12 hover:text-white',
+      true: 'bg-slate-900/[0.09] panel-t1 dark:bg-white/22 dark:text-white',
+      false: 'panel-t3 hover:bg-slate-900/[0.06] hover:panel-t1 dark:text-white/70 dark:hover:bg-white/12 dark:hover:text-white',
     },
     size: {
       sm: 'px-3 py-2',
@@ -105,13 +108,13 @@ export const stage = {
     cn(panelSurface({ layout: 'floating', focus: focused ? 'active' : 'idle' }), extra),
   panelDock: (extra?: string) => cn(panelSurface({ layout: 'docked' }), extra),
   controlBar: (extra?: string, compact: boolean = true) => cn(controlBar({ compact }), extra),
-  panelHeader: 'relative z-[1] flex items-center justify-between border-b border-white/14 px-4 py-3',
+  panelHeader: 'relative z-[1] flex items-center justify-between border-b border-[var(--panel-divider)] px-4 py-3',
   panelBody: (extra?: string) => cn('relative z-[1]', extra),
   subpanel: (extra?: string, tone: 'default' | 'strong' | 'soft' = 'default') => cn(subpanel({ tone }), extra),
   pill: (extra?: string, emphasis: 'default' | 'strong' | 'muted' = 'default') => cn(pill({ emphasis }), extra),
   actionCard: (extra?: string, interactive: boolean = true) => cn(actionCard({ interactive }), extra),
   emptyState: (extra?: string, size: 'sm' | 'md' | 'lg' = 'md') => cn(emptyState({ size }), extra),
   toggleButton: (active: boolean, extra?: string, size: 'sm' | 'md' = 'md') => cn(toggleButton({ active, size }), extra),
-  mutedText: 'text-white/64',
-  strongText: 'text-white',
+  mutedText: 'panel-t3',
+  strongText: 'panel-t1',
 };

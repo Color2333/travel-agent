@@ -69,20 +69,6 @@ export function StageWorkspace({
         onMinimize={(key) => onSetPanelState(key, 'minimized')}
       />
 
-      {minimizedItems.length > 0 && (
-        <div className="pointer-events-none absolute bottom-6 left-6 z-40 hidden lg:flex">
-          <StageRestoreBar
-            items={minimizedItems.map((item) => ({
-              key: item.key,
-              label: item.label,
-              icon: item.icon,
-              onClick: () => onSetPanelState(item.key, 'open'),
-            }))}
-            className="inline-flex items-center gap-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]"
-          />
-        </div>
-      )}
-
       <StageMobileDock
         items={openMobileItems}
         activeKey={activeMobilePanel}

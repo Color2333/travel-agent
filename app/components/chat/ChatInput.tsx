@@ -38,7 +38,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
   const isDisabled = !input.trim() || isLoading;
 
   return (
-    <form onSubmit={onSubmit} className="border-t border-white/10 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+    <form onSubmit={onSubmit} className="border-t border-[var(--panel-divider)] px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
       <div className="relative flex items-end gap-2 sm:gap-3">
         <div className="flex-1 relative">
           <textarea
@@ -49,7 +49,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
             placeholder="输入消息..."
             disabled={isLoading}
             rows={1}
-            className="w-full min-h-[48px] max-h-[120px] rounded-[24px] border border-white/16 bg-white/10 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/38 focus:border-white/28 focus:outline-none focus:ring-2 focus:ring-white/12 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:text-[15px]"
+            className="w-full min-h-[48px] max-h-[120px] rounded-[24px] border border-slate-900/[0.10] bg-slate-900/[0.04] px-4 py-3 pr-12 text-sm panel-t1 placeholder:panel-t4 focus:border-slate-900/[0.18] focus:outline-none focus:ring-2 focus:ring-slate-900/[0.06] disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all duration-200 backdrop-blur-xl dark:border-white/16 dark:bg-white/10 dark:placeholder:text-white/38 dark:focus:border-white/28 dark:focus:ring-white/12 sm:text-[15px]"
             style={{ lineHeight: '1.5' }}
           />
         </div>
@@ -60,7 +60,7 @@ export default function ChatInput({ input, onChange, onSubmit, isLoading }: Chat
           disabled={isDisabled}
           className={`flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
             isDisabled
-              ? 'bg-white/8 text-white/32 cursor-not-allowed'
+              ? 'bg-slate-900/[0.06] text-slate-400 cursor-not-allowed dark:bg-white/8 dark:text-white/32'
               : 'bg-[linear-gradient(135deg,rgba(125,211,252,0.86),rgba(59,130,246,0.96))] text-white shadow-[0_16px_34px_rgba(59,130,246,0.32)] hover:scale-[1.03] active:scale-95'
           }`}
         >

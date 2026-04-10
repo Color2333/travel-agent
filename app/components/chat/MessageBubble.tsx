@@ -147,7 +147,7 @@ function renderInline(text: string, isUser: boolean) {
       return (
         <code
           key={`${token}-${index}`}
-          className={`rounded-md px-1.5 py-0.5 text-[0.92em] ${isUser ? 'bg-white/20 text-white' : 'bg-white/12 text-sky-100'}`}
+          className={`rounded-md px-1.5 py-0.5 text-[0.92em] ${isUser ? 'bg-white/20 text-white' : 'bg-slate-900/8 text-sky-700 dark:bg-white/12 dark:text-sky-100'}`}
         >
           {token.slice(1, -1)}
         </code>
@@ -156,7 +156,7 @@ function renderInline(text: string, isUser: boolean) {
 
     if ((token.startsWith('**') && token.endsWith('**')) || (token.startsWith('__') && token.endsWith('__'))) {
       return (
-        <strong key={`${token}-${index}`} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-50'}>
+        <strong key={`${token}-${index}`} className={isUser ? 'font-semibold text-white' : 'font-semibold text-slate-800 dark:text-sky-50'}>
           {token.slice(2, -2)}
         </strong>
       );
@@ -172,16 +172,16 @@ function highlightContent(content: string, isUser: boolean, offset: number = 0):
   return parts.map((part, index) => {
     const key = `${part}-${offset}-${index}`;
     if (/^\d+°[Cc]?$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-100'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-sky-600 dark:text-sky-100'}>{part}</span>;
     }
     if (/^[\u4e00-\u9fa5]{2,}(?:市|县|区|镇|乡)$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-white'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-slate-800 dark:text-white'}>{part}</span>;
     }
     if (/^\d+%$/.test(part) || /^评分\s*\d+$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-emerald-100'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-medium text-emerald-600 dark:text-emerald-200'}>{part}</span>;
     }
     if (/^(推荐|适合|不适合|高铁|自驾|通勤|风险)$/.test(part)) {
-      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-white'}>{part}</span>;
+      return <span key={key} className={isUser ? 'font-semibold text-white' : 'font-semibold text-slate-700 dark:text-white'}>{part}</span>;
     }
     return <span key={key}>{part}</span>;
   });
@@ -191,16 +191,16 @@ function AssistantRichContent({ content }: { content: string }) {
   const blocks = parseMarkdownBlocks(content);
 
   if (blocks.length === 0) {
-    return <p className="whitespace-pre-wrap text-[15px] leading-7 text-white/86">{content}</p>;
+    return <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700 dark:text-white/86">{content}</p>;
   }
 
   return (
-    <div className="space-y-3 text-[15px] leading-7 text-white/86">
+    <div className="space-y-3 text-[15px] leading-7 text-slate-700 dark:text-white/86">
       {blocks.map((block, index) => {
         if (block.type === 'heading') {
           const sizeClass = block.level === 1 ? 'text-lg' : block.level === 2 ? 'text-base' : 'text-sm';
           return (
-            <h3 key={`heading-${index}`} className={`${sizeClass} font-semibold tracking-tight text-white`}>
+            <h3 key={`heading-${index}`} className={`${sizeClass} font-semibold tracking-tight text-slate-800 dark:text-white`}>
               {renderInline(block.text, false)}
             </h3>
           );
@@ -214,7 +214,7 @@ function AssistantRichContent({ content }: { content: string }) {
               className={`space-y-2 pl-5 ${block.ordered ? 'list-decimal' : 'list-disc'} marker:text-sky-500`}
             >
               {block.items.map((item, itemIndex) => (
-                <li key={`item-${itemIndex}`} className="text-white/82">
+                <li key={`item-${itemIndex}`} className="text-slate-600 dark:text-white/82">
                   {renderInline(item, false)}
                 </li>
               ))}
@@ -224,7 +224,7 @@ function AssistantRichContent({ content }: { content: string }) {
 
         if (block.type === 'quote') {
           return (
-            <div key={`quote-${index}`} className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-white/82">
+            <div key={`quote-${index}`} className="rounded-2xl border border-slate-200/70 bg-slate-50/60 px-4 py-3 text-slate-600 dark:border-white/12 dark:bg-white/10 dark:text-white/82">
               {block.text.split('\n').map((line, lineIndex) => (
                 <p key={`quote-line-${lineIndex}`}>{renderInline(line, false)}</p>
               ))}
@@ -234,10 +234,10 @@ function AssistantRichContent({ content }: { content: string }) {
 
         if (block.type === 'table') {
           return (
-            <div key={`table-${index}`} className="overflow-hidden rounded-2xl border border-white/12 bg-white/10 shadow-sm">
+            <div key={`table-${index}`} className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/60 shadow-sm dark:border-white/12 dark:bg-white/10">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="bg-white/8 text-white/56">
+                  <thead className="bg-slate-100/60 text-slate-500 dark:bg-white/8 dark:text-white/56">
                     <tr>
                       {block.headers.map((header, headerIndex) => (
                         <th key={`header-${headerIndex}`} className="px-4 py-3 font-semibold">
@@ -248,9 +248,9 @@ function AssistantRichContent({ content }: { content: string }) {
                   </thead>
                   <tbody>
                     {block.rows.map((row, rowIndex) => (
-                      <tr key={`row-${rowIndex}`} className="border-t border-white/10">
+                      <tr key={`row-${rowIndex}`} className="border-t border-slate-100 dark:border-white/10">
                         {row.map((cell, cellIndex) => (
-                          <td key={`cell-${rowIndex}-${cellIndex}`} className="px-4 py-3 text-white/82">
+                          <td key={`cell-${rowIndex}-${cellIndex}`} className="px-4 py-3 text-slate-600 dark:text-white/82">
                             {renderInline(cell, false)}
                           </td>
                         ))}
@@ -264,7 +264,7 @@ function AssistantRichContent({ content }: { content: string }) {
         }
 
         return (
-          <p key={`paragraph-${index}`} className="whitespace-pre-wrap text-[15px] leading-7 text-white/82">
+          <p key={`paragraph-${index}`} className="whitespace-pre-wrap text-[15px] leading-7 text-slate-600 dark:text-white/82">
             {renderInline(block.text, false)}
           </p>
         );
@@ -278,9 +278,9 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className={`flex items-end gap-2.5 sm:gap-3 animate-slide-up ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl ${isUser ? 'bg-white/14 text-white backdrop-blur-xl' : 'bg-[linear-gradient(135deg,rgba(125,211,252,0.84),rgba(59,130,246,0.94))] shadow-[0_12px_30px_rgba(59,130,246,0.26)]'}`}>
+      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl ${isUser ? 'bg-slate-100 dark:bg-white/14 text-slate-500 dark:text-white backdrop-blur-xl' : 'bg-[linear-gradient(135deg,rgba(125,211,252,0.84),rgba(59,130,246,0.94))] shadow-[0_12px_30px_rgba(59,130,246,0.26)]'}`}>
         {isUser ? (
-          <User className="h-4 w-4 text-white" />
+          <User className="h-4 w-4" />
         ) : (
           <Sparkles className="h-4 w-4 text-white" />
         )}
@@ -291,7 +291,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           className={`rounded-[26px] px-4 py-3.5 shadow-sm ${
             isUser
               ? 'rounded-br-lg border border-white/12 bg-[linear-gradient(135deg,rgba(59,130,246,0.9),rgba(37,99,235,0.96))] text-white shadow-[0_18px_44px_rgba(37,99,235,0.22)] backdrop-blur-xl'
-              : 'rounded-bl-lg border border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.08))] text-white shadow-[0_18px_45px_rgba(15,23,42,0.1)] backdrop-blur-[24px]'
+              : 'rounded-bl-lg border border-slate-200/60 bg-white/70 text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-[24px] dark:border-white/16 dark:bg-white/[0.09] dark:text-white dark:shadow-[0_18px_45px_rgba(15,23,42,0.1)]'
           }`}
         >
           {isUser ? (
@@ -305,7 +305,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           className={`absolute bottom-0 h-3 w-3 ${
             isUser
               ? 'right-0 translate-x-[22%] bg-blue-700/90'
-              : 'left-0 -translate-x-[22%] border-l border-b border-white/16 bg-white/16 backdrop-blur-xl'
+              : 'left-0 -translate-x-[22%] border-l border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-white/16 dark:bg-white/[0.09]'
           }`}
           style={{
             clipPath: isUser
