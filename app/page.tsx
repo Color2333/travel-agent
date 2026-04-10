@@ -5,6 +5,7 @@ import { LayoutPanelTop, Map, MessageSquareText } from 'lucide-react';
 import { StageAmbient } from './components/layout/StageAmbient';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/layout/SettingsModal';
+import { StageStatusBar } from './components/layout/StageStatusBar';
 import { StageWorkspace } from './components/layout/StageWorkspace';
 import ChatContainer from './components/chat/ChatContainer';
 import WeatherMap from './components/map/WeatherMap';
@@ -122,6 +123,14 @@ export default function Home() {
             className="h-full w-full"
           />
         </div>
+
+        <StageStatusBar
+          focusedPanel={focusedPanel}
+          openCount={openPanels.length}
+          selectedCity={selectedCity}
+          originCity={tripPlan?.origin ?? null}
+          date={tripPlan?.date ?? null}
+        />
 
         <StageWorkspace
           items={panelButtons}
