@@ -37,13 +37,36 @@ function useForecast(cityId: string | undefined, cityName: string) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!cityId) { setForecast(null); return; }
+    if (!cityId) {
+      setForecast(null);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
     setLoading(true);
-    fetch(`/api/weather/forecast?cityId=${encodeURIComponent(cityId)}&cityName=${encodeURIComponent(cityName)}`)
+
+    fetch(`/api/weather/forecast?cityId=${encodeURIComponent(cityId)}&cityName=${encodeURIComponent(cityName)}`, {
+      signal: controller.signal,
+    })
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setForecast(data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!controller.signal.aborted && Array.isArray(data)) {
+          setForecast(data);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setForecast(null);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
   }, [cityId, cityName]);
 
   return { forecast, loading };
@@ -85,12 +108,10 @@ function MetricPill({ icon: Icon, label, value }: { icon: React.ElementType; lab
 }
 
 export default function DecisionPanel({ tripPlan, selectedCity, weatherData }: DecisionPanelProps) {
-  if (!tripPlan) return null;
-
   const cityData = (weatherData as WeatherDataWithTransport[]).find((item) => item.city === selectedCity)
     ?? (weatherData as WeatherDataWithTransport[])[0];
-
   const { forecast, loading } = useForecast(cityData?.qweatherId, cityData?.city ?? '');
+  if (!tripPlan) return null;
 
   const conditionInfo = cityData ? WEATHER_CONDITION_MAP[cityData.weather] : null;
   const weatherIcon = cityData?.weatherIcon ?? conditionInfo?.icon ?? '🌡️';

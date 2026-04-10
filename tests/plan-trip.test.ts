@@ -6,7 +6,7 @@ import { weatherCache } from '../lib/weather/cache.ts';
 const originalFetch = global.fetch;
 const originalApiKey = process.env.WEATHER_API_KEY;
 
-function weatherPayload(textDay, overrides = {}) {
+function weatherPayload(textDay: string, overrides: Record<string, string> = {}) {
   return {
     daily: [
       {
@@ -57,8 +57,8 @@ test('planTrip sorts cities, returns failures, and exposes top recommendation', 
     ['101210507', weatherPayload('晴')],
   ]);
 
-  global.fetch = async (input) => {
-    const url = typeof input === 'string' ? input : input.url;
+  global.fetch = async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     const parsed = new URL(url);
     const location = parsed.searchParams.get('location');
 
@@ -108,18 +108,18 @@ test('planTrip sorts cities, returns failures, and exposes top recommendation', 
 
   assert.equal(result.origin, '上海');
   assert.equal(result.cities.length, 8);
-  assert.equal(result.failedCities.length, 1);
-  assert.equal(result.failedCities[0].city, '舟山');
+  assert.equal(result.failedCities?.length, 1);
+  assert.equal(result.failedCities?.[0]?.city, '舟山');
   assert.equal(result.topRecommendation?.score, 100);
   assert.equal(['杭州', '嘉兴', '南京', '扬州', '绍兴'].includes(result.topRecommendation?.city ?? ''), true);
-  assert.equal(result.goodOptions.some((item) => item.city === '杭州'), true);
-  assert.equal(result.avoidCities.some((item) => item.city === '苏州'), true);
-  assert.match(result.summary, /8个城市中/);
+  assert.equal(result.goodOptions?.some((item) => item.city === '杭州'), true);
+  assert.equal(result.avoidCities?.some((item) => item.city === '苏州'), true);
+  assert.match(result.summary ?? '', /8个城市中/);
 });
 
 test('planTrip returns a clear error when every city weather lookup fails', async () => {
-  global.fetch = async (input) => {
-    const url = typeof input === 'string' ? input : input.url;
+  global.fetch = async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     const parsed = new URL(url);
 
     if (parsed.pathname.includes('/geo/v2/city/lookup')) {
@@ -138,7 +138,7 @@ test('planTrip returns a clear error when every city weather lookup fails', asyn
   const result = await planTrip('上海', '2026-04-10', 100);
 
   assert.equal(result.cities.length, 0);
-  assert.equal(result.failedCities.length, 2);
+  assert.equal(result.failedCities?.length, 2);
   assert.equal(result.error, '天气服务暂时不可用，请稍后再试');
 });
 

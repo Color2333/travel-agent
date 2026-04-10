@@ -122,7 +122,7 @@ function MapViewportController({ points, selectedCity }: { points: WeatherPoint[
   return null;
 }
 
-export default function MapInner({ weatherData, originCity, selectedCity, onSelectCity, className }: MapInnerProps) {
+export default function MapInner({ weatherData, selectedCity, onSelectCity, className }: MapInnerProps) {
   const resultPoints = useMemo(() => weatherData.map(getPoint).sort((a, b) => b.score - a.score), [weatherData]);
   const previewPoints = useMemo(() => createPreviewPoints(), []);
   const visiblePoints = resultPoints.length > 0 ? resultPoints : previewPoints;
@@ -140,7 +140,6 @@ export default function MapInner({ weatherData, originCity, selectedCity, onSele
   const active = visiblePoints.find((item) => item.city === activeCity) ?? visiblePoints[0] ?? null;
   const otherPoints = active ? visiblePoints.filter((item) => item.city !== active.city) : [];
   const center: LatLngExpression = active ? [active.lat, active.lng] : [DEFAULT_POSITION.lat, DEFAULT_POSITION.lng];
-  const displayOrigin = originCity ?? '上海';
 
   const handleSelect = (cityName: string) => {
     setActiveCity(cityName);

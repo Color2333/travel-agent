@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { StageDesktopPanels, type DesktopStagePanel } from './StageDesktopPanels';
 import { StageMobileDock } from './StageMobileDock';
@@ -20,7 +20,6 @@ interface StageWorkspaceProps {
   panels: DesktopStagePanel[];
   panelStates: Record<StagePanelKey, StagePanelState>;
   openPanelKeys: StagePanelKey[];
-  minimizedPanelKeys: StagePanelKey[];
   focusedPanel: StagePanelKey;
   activeMobilePanel: StagePanelKey;
   onTogglePanel: (key: StagePanelKey) => void;
@@ -35,7 +34,6 @@ export function StageWorkspace({
   panels,
   panelStates,
   openPanelKeys,
-  minimizedPanelKeys,
   focusedPanel,
   activeMobilePanel,
   onTogglePanel,
@@ -44,8 +42,18 @@ export function StageWorkspace({
   onSetActiveMobilePanel,
   mobileContent,
 }: StageWorkspaceProps) {
-  const minimizedItems = items.filter((item) => minimizedPanelKeys.includes(item.key));
   const openMobileItems = items.filter((item) => openPanelKeys.includes(item.key));
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener('change', update);
+
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
 
   return (
     <>
@@ -69,17 +77,19 @@ export function StageWorkspace({
         onMinimize={(key) => onSetPanelState(key, 'minimized')}
       />
 
-      <StageMobileDock
-        items={openMobileItems}
-        activeKey={activeMobilePanel}
-        onSelect={(key) => onSetActiveMobilePanel(key as StagePanelKey)}
-        onMinimize={(key) => onSetPanelState(key as StagePanelKey, 'minimized')}
-        hidden={openMobileItems.length === 0}
-      >
-        {mobileContent}
-      </StageMobileDock>
+      {!isDesktop && (
+        <StageMobileDock
+          items={openMobileItems}
+          activeKey={activeMobilePanel}
+          onSelect={(key) => onSetActiveMobilePanel(key as StagePanelKey)}
+          onMinimize={(key) => onSetPanelState(key as StagePanelKey, 'minimized')}
+          hidden={openMobileItems.length === 0}
+        >
+          {mobileContent}
+        </StageMobileDock>
+      )}
 
-      {openMobileItems.length === 0 && (
+      {!isDesktop && openMobileItems.length === 0 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-4 lg:hidden">
           <StageRestoreBar
             items={items.map((item) => ({

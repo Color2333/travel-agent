@@ -24,7 +24,6 @@ export default function Home() {
     activeMobilePanel,
     focusedPanel,
     openPanels,
-    minimizedPanels,
     setActiveMobilePanel,
     setFocusedPanel,
     setPanelState,
@@ -118,7 +117,6 @@ export default function Home() {
           panels={desktopPanels}
           panelStates={panelStates}
           openPanelKeys={openPanels}
-          minimizedPanelKeys={minimizedPanels}
           focusedPanel={focusedPanel}
           activeMobilePanel={activeMobilePanel}
           onTogglePanel={togglePanel}
