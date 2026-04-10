@@ -13,16 +13,76 @@ const DEFAULT_PANEL_STATES: PanelStateMap = {
   cards: 'open',
 };
 
+const STORAGE_KEY = 'stage_workspace_layout_v1';
+
 function getNextOpenPanel(states: PanelStateMap, excluded?: StagePanelKey) {
   return (Object.entries(states) as Array<[StagePanelKey, StagePanelState]>).find(
     ([key, state]) => key !== excluded && state === 'open',
   )?.[0];
 }
 
+function isPanelKey(value: unknown): value is StagePanelKey {
+  return value === 'chat' || value === 'decision' || value === 'cards';
+}
+
+function isPanelState(value: unknown): value is StagePanelState {
+  return value === 'open' || value === 'minimized';
+}
+
+function normalizePanelStates(value: unknown): PanelStateMap | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const candidate = value as Record<string, unknown>;
+  const nextStates = { ...DEFAULT_PANEL_STATES };
+
+  for (const key of Object.keys(nextStates) as StagePanelKey[]) {
+    const nextValue = candidate[key];
+    if (isPanelState(nextValue)) {
+      nextStates[key] = nextValue;
+    }
+  }
+
+  return nextStates;
+}
+
+function readStoredLayout() {
+  if (typeof window === 'undefined') return null;
+
+  const rawValue = window.localStorage.getItem(STORAGE_KEY);
+  if (!rawValue) return null;
+
+  try {
+    const parsed = JSON.parse(rawValue) as {
+      panelStates?: unknown;
+      activeMobilePanel?: unknown;
+      focusedPanel?: unknown;
+    };
+
+    return {
+      panelStates: normalizePanelStates(parsed.panelStates),
+      activeMobilePanel: isPanelKey(parsed.activeMobilePanel) ? parsed.activeMobilePanel : null,
+      focusedPanel: isPanelKey(parsed.focusedPanel) ? parsed.focusedPanel : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function useStagePanels(initialState: PanelStateMap = DEFAULT_PANEL_STATES) {
   const [panelStates, setPanelStates] = useState<PanelStateMap>(initialState);
   const [activeMobilePanel, setActiveMobilePanel] = useState<StagePanelKey>('chat');
   const [focusedPanel, setFocusedPanel] = useState<StagePanelKey>('chat');
+
+  useEffect(() => {
+    const storedLayout = readStoredLayout();
+    if (!storedLayout?.panelStates) return;
+
+    const nextOpenPanel = getNextOpenPanel(storedLayout.panelStates) ?? 'chat';
+
+    setPanelStates(storedLayout.panelStates);
+    setActiveMobilePanel(storedLayout.activeMobilePanel ?? nextOpenPanel);
+    setFocusedPanel(storedLayout.focusedPanel ?? nextOpenPanel);
+  }, []);
 
   const setPanelState = (panel: StagePanelKey, nextState: StagePanelState) => {
     setPanelStates((current) => {
@@ -67,6 +127,19 @@ export function useStagePanels(initialState: PanelStateMap = DEFAULT_PANEL_STATE
         .map(([key]) => key),
     [panelStates],
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        panelStates,
+        activeMobilePanel,
+        focusedPanel,
+      }),
+    );
+  }, [activeMobilePanel, focusedPanel, panelStates]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
