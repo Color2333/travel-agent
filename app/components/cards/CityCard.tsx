@@ -39,7 +39,7 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
   ].join(' ');
 
   return (
-    <button type="button" onClick={onClick} className={shellClass}>
+    <button type="button" onClick={onClick} className={shellClass} aria-label={`选择${city.name}，${weatherLabel || '天气信息加载中'}`}>
       {isActive && (
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-sky-300 to-blue-400" />
       )}

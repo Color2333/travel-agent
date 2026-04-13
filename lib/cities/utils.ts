@@ -5,6 +5,14 @@ import type { City } from '../../types/index.ts';
 // Haversine great-circle distance (km)
 // ---------------------------------------------------------------------------
 export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  // 验证坐标范围：纬度 -90~90，经度 -180~180
+  if (lat1 < -90 || lat1 > 90 || lat2 < -90 || lat2 > 90) {
+    throw new Error(`Invalid latitude: must be between -90 and 90. Got lat1=${lat1}, lat2=${lat2}`);
+  }
+  if (lng1 < -180 || lng1 > 180 || lng2 < -180 || lng2 > 180) {
+    throw new Error(`Invalid longitude: must be between -180 and 180. Got lng1=${lng1}, lng2=${lng2}`);
+  }
+
   const R = 6371;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -30,6 +38,26 @@ export function estimateTransitTimes(km: number): {
   trainPrice: string;
   drivePrice: string;
 } {
+  // 处理负距离或无效距离
+  if (km < 0 || !Number.isFinite(km)) {
+    return {
+      trainTime: '未知',
+      driveTime: '未知',
+      trainPrice: '未知',
+      drivePrice: '未知',
+    };
+  }
+
+  // 处理零距离特殊情况
+  if (km === 0) {
+    return {
+      trainTime: '0 分钟',
+      driveTime: '0 分钟',
+      trainPrice: '约¥0',
+      drivePrice: '约¥0',
+    };
+  }
+
   // HSR effective speed ~300 km/h; add 15 min fixed boarding overhead
   const trainH = 15 / 60 + km / 300;
   // Highway driving ~80 km/h

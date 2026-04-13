@@ -95,6 +95,11 @@ function calculateScore(
     else if (pressure < 1000) score -= 1;
   }
 
+  // NaN 检查：如果最终分数为 NaN，返回默认值 50
+  if (Number.isNaN(score)) {
+    return 50;
+  }
+
   return Math.max(0, Math.min(100, score));
 }
 

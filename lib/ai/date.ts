@@ -7,6 +7,11 @@ function daysUntilWeekday(todayDay: number, targetDay: number): number {
 }
 
 export function parseDateQuery(query: string, referenceDate: Date = new Date()): string {
+  // 处理 null/undefined，空字符串会回退到默认值
+  if (query == null) {
+    throw new Error('Date query cannot be null or undefined');
+  }
+
   const today = startOfDay(referenceDate);
 
   const m = query.match(/^(\d{4}-\d{2}-\d{2})$/);
