@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CloudSun, Settings, Moon, Sun } from 'lucide-react';
+import { CloudSun, Settings, Moon, Sun, Search } from 'lucide-react';
 import { stage } from '@/lib/ui/stage';
 
 function useDarkMode() {
@@ -25,9 +25,10 @@ function useDarkMode() {
 
 interface HeaderProps {
   onSettingsClick: () => void;
+  onSearchClick?: () => void;
 }
 
-export function Header({ onSettingsClick }: HeaderProps) {
+export function Header({ onSettingsClick, onSearchClick }: HeaderProps) {
   const { dark, toggle } = useDarkMode();
 
   return (
@@ -45,6 +46,17 @@ export function Header({ onSettingsClick }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {onSearchClick && (
+              <button
+                type="button"
+                onClick={onSearchClick}
+                className={stage.actionCard('group relative rounded-2xl p-2.5 active:scale-95', true)}
+                aria-label="Search cities"
+              >
+                <Search className="w-5 h-5 panel-t2 transition-colors group-hover:panel-t1" />
+              </button>
+            )}
+
             <button
               type="button"
               onClick={toggle}

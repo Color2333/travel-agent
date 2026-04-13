@@ -10,11 +10,13 @@ import ChatContainer from './components/chat/ChatContainer';
 import WeatherMap from './components/map/WeatherMap';
 import CityCardGrid from './components/cards/CityCardGrid';
 import DecisionPanel from './components/decision/DecisionPanel';
+import CitySearchModal from './components/search/CitySearchModal';
 import type { TripPlanResult, WeatherData } from '@/types';
 import { useStagePanels, type StagePanelKey } from '@/lib/ui/use-stage-panels';
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [tripPlan, setTripPlan] = useState<TripPlanResult | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -99,7 +101,10 @@ export default function Home() {
     <div className="relative min-h-screen overflow-hidden [background:var(--page-bg)]">
       <StageAmbient />
 
-      <Header onSettingsClick={() => setIsSettingsOpen(true)} />
+      <Header 
+        onSettingsClick={() => setIsSettingsOpen(true)} 
+        onSearchClick={() => setIsSearchOpen(true)}
+      />
 
       <main className="relative isolate h-screen w-full">
         <div className="absolute inset-0 z-0">
@@ -143,6 +148,18 @@ export default function Home() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      <CitySearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectCity={(city) => {
+          // 将选中的城市设置为对话的默认出发地
+          setQueuedPrompt({
+            id: Date.now(),
+            text: `这周六从${city.name}出发`,
+          });
+        }}
       />
     </div>
   );
