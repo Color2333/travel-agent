@@ -1,6 +1,6 @@
 'use client';
 
-import { Droplets, Train, Car } from 'lucide-react';
+import { Droplets, Train, Car, Wind, Eye, Sun } from 'lucide-react';
 import { WEATHER_CONDITION_MAP, type City, type WeatherData } from '@/types';
 
 interface CityCardProps {
@@ -47,7 +47,14 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
       <div className="px-3.5 py-2.5">
         {/* Main row */}
         <div className="flex items-center gap-2.5">
-          <span className="text-xl leading-none flex-shrink-0">{weatherIcon}</span>
+          <span className="text-xl leading-none flex-shrink-0 relative">
+            {weatherIcon}
+            {rank && rank <= 3 && (
+              <span className="absolute -top-1 -right-1 text-[10px] leading-none">
+                {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+              </span>
+            )}
+          </span>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-1.5">
@@ -71,22 +78,42 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
                 </span>
               </div>
             )}
-            {rank && rank <= 3 && (
-              <span className="text-[16px] leading-none">{rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</span>
-            )}
           </div>
         </div>
 
         {/* Detail row */}
         {weather && (
-          <div className="flex items-center gap-3 mt-2 ml-[34px] text-[10px] panel-t3">
-            <span className="flex items-center gap-0.5">
-              <Droplets className="w-2.5 h-2.5 text-blue-400 flex-shrink-0" />
+          <div className="flex items-center gap-2.5 mt-2 ml-[34px] text-[10px] panel-t3 flex-wrap">
+            <span className="flex items-center gap-0.5 text-blue-500 dark:text-blue-400">
+              <Droplets className="w-2.5 h-2.5 flex-shrink-0" />
               {weather.rainProbability}%
             </span>
-            {weather.windSpeed > 0 && <span>{weather.windSpeed}级</span>}
+            {weather.humidity > 0 && (
+              <span className="flex items-center gap-0.5 text-slate-500 dark:text-slate-400">
+                <Droplets className="w-2 h-2 flex-shrink-0 opacity-70" />
+                {weather.humidity}%
+              </span>
+            )}
+            {weather.windSpeed > 0 && (
+              <span className="flex items-center gap-0.5 text-slate-500 dark:text-slate-400">
+                <Wind className="w-2 h-2 flex-shrink-0 opacity-70" />
+                {weather.windScaleDay || weather.windSpeed}级
+              </span>
+            )}
+            {weather.vis && weather.vis < 10 && (
+              <span className="flex items-center gap-0.5 text-amber-500 dark:text-amber-400">
+                <Eye className="w-2 h-2 flex-shrink-0" />
+                {weather.vis}km
+              </span>
+            )}
+            {weather.uvIndex !== undefined && weather.uvIndex >= 5 && (
+              <span className="flex items-center gap-0.5 text-orange-500 dark:text-orange-400">
+                <Sun className="w-2 h-2 flex-shrink-0" />
+                UV{weather.uvIndex}
+              </span>
+            )}
             {city.trainTime ? (
-              <span className="flex items-center gap-0.5">
+              <span className="flex items-center gap-0.5 text-sky-600 dark:text-sky-400 ml-auto">
                 <Train className="w-2.5 h-2.5 flex-shrink-0" />
                 {city.trainTime}
                 {city.trainPrice && (
@@ -94,12 +121,12 @@ export default function CityCard({ city, weather, onClick, isActive, isHighlight
                 )}
               </span>
             ) : city.driveTime ? (
-              <span className="flex items-center gap-0.5">
+              <span className="flex items-center gap-0.5 text-slate-500 dark:text-slate-400 ml-auto">
                 <Car className="w-2.5 h-2.5 flex-shrink-0" />
                 {city.driveTime}
               </span>
             ) : city.distance ? (
-              <span>{city.distance}km</span>
+              <span className="ml-auto text-slate-500 dark:text-slate-400">{city.distance}km</span>
             ) : null}
           </div>
         )}

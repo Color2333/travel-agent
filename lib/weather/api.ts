@@ -40,11 +40,15 @@ function calculateScore(
   humidity: number,
   precip: number,
   vis: number,
-  tempSpread: number
+  tempSpread: number,
+  uvIndex?: number,
+  windSpeed?: number,
+  pressure?: number
 ): number {
   let score = 100;
   const worstWeather = nightWeather && mapSeverity(nightWeather) > mapSeverity(dayWeather) ? nightWeather : dayWeather;
 
+  // 1. 天气状况扣分 (最大 -50)
   switch (worstWeather) {
     case 'rainy': score -= 50; break;
     case 'snowy': score -= 40; break;
@@ -52,17 +56,44 @@ function calculateScore(
     case 'cloudy': score -= 10; break;
   }
 
+  // 2. 湿度扣分 (最大 -15)
   if (humidity > 80) score -= 15;
   else if (humidity > 70) score -= 10;
   else if (humidity > 60) score -= 5;
 
+  // 3. 降水扣分 (最大 -15)
   if (precip > 10) score -= 15;
+  else if (precip > 5) score -= 10;
   else if (precip > 0) score -= Math.min(precip * 2, 10);
 
-  if (vis > 0 && vis < 5) score -= 10;
-  else if (vis > 0 && vis < 10) score -= 5;
+  // 4. 能见度扣分 (最大 -10)
+  if (vis > 0 && vis < 3) score -= 10;  // 严重雾霾
+  else if (vis > 0 && vis < 5) score -= 7;
+  else if (vis > 0 && vis < 10) score -= 3;
 
+  // 5. 温差扣分 (最大 -5)
   if (tempSpread > 15) score -= 5;
+  else if (tempSpread > 10) score -= 2;
+
+  // 6. 紫外线指数 (新增：过高或过低都扣分，最大 -5)
+  if (uvIndex !== undefined) {
+    if (uvIndex >= 11) score -= 5;  // 极端紫外线
+    else if (uvIndex >= 8) score -= 3;  // 很强
+    else if (uvIndex <= 1 && dayWeather === 'sunny') score -= 2;  // 冬季阳光不足
+  }
+
+  // 7. 风速扣分 (新增：大风不舒适，最大 -5)
+  if (windSpeed !== undefined) {
+    if (windSpeed > 50) score -= 5;  // 大风
+    else if (windSpeed > 30) score -= 3;  // 较强风
+    else if (windSpeed > 20) score -= 1;  // 微风
+  }
+
+  // 8. 气压扣分 (新增：气压过低可能表示恶劣天气，最大 -3)
+  if (pressure !== undefined) {
+    if (pressure < 980) score -= 3;  // 低气压
+    else if (pressure < 1000) score -= 1;
+  }
 
   return Math.max(0, Math.min(100, score));
 }
@@ -87,7 +118,10 @@ function buildWeatherData(dayForecast: Record<string, string>, cityName: string,
   const vis = parseInt(dayForecast.vis, 10) || 0;
   const tempHigh = parseInt(dayForecast.tempMax, 10) || 0;
   const tempLow = parseInt(dayForecast.tempMin, 10) || 0;
-  const score = calculateScore(weather, weatherNight, humidity, precip, vis, tempHigh - tempLow);
+  const windSpeed = parseInt(dayForecast.windSpeedDay, 10) || 0;
+  const uvIndex = parseInt(dayForecast.uvIndex, 10) || undefined;
+  const pressure = parseInt(dayForecast.pressure, 10) || undefined;
+  const score = calculateScore(weather, weatherNight, humidity, precip, vis, tempHigh - tempLow, uvIndex, windSpeed, pressure);
 
   return {
     city: cityName,
@@ -97,7 +131,7 @@ function buildWeatherData(dayForecast: Record<string, string>, cityName: string,
     tempLow,
     rainProbability: estimateRainProbability(textDay, precip),
     humidity,
-    windSpeed: parseInt(dayForecast.windSpeedDay, 10) || 0,
+    windSpeed,
     score,
     weatherText: textDay,
     textNight,
@@ -105,10 +139,10 @@ function buildWeatherData(dayForecast: Record<string, string>, cityName: string,
     windDirDay: dayForecast.windDirDay,
     windScaleDay: dayForecast.windScaleDay,
     vis,
-    uvIndex: parseInt(dayForecast.uvIndex, 10) || undefined,
+    uvIndex,
     sunrise: dayForecast.sunrise,
     sunset: dayForecast.sunset,
-    pressure: parseInt(dayForecast.pressure, 10) || undefined,
+    pressure,
   };
 }
 
