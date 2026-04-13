@@ -167,6 +167,18 @@ export async function planTrip(city: string, date: string, maxDistance: number =
       avoidCities,
     };
   } catch (error) {
-    return { origin: city, date, error: error instanceof Error ? error.message : 'Unknown error', cities: [] };
+    // 脱敏错误信息，不泄露内部细节
+    const isProd = process.env.NODE_ENV === 'production';
+    const safeError = isProd 
+      ? '服务暂时不可用，请稍后再试' 
+      : (error instanceof Error ? error.message : 'Unknown error');
+    
+    return { 
+      origin: city, 
+      date, 
+      error: safeError, 
+      cities: [],
+      ...(isProd ? {} : { debugError: error instanceof Error ? error.message : String(error) })
+    };
   }
 }
